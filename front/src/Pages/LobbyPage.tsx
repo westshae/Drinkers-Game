@@ -3,7 +3,7 @@ import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GameContext } from '../Components/GameContext';
 
-const LocationsPage = () => {
+const LobbyPage = () => {
 
     const navigate = useNavigate()
 
@@ -25,4 +25,4 @@ const LocationsPage = () => {
     )
 }
 
-export default LocationsPage;
+export default LobbyPage;
