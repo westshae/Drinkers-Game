@@ -1,76 +1,133 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { Box, Typography, FormControl, InputLabel, Input, Button, Container } from '@mui/material';
+import React, { useState, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 
-
-
 const GameComponent: React.FC = () => {
-  const [username, setUsername] = useState<string>('asd');
-  const [lobbyCode, setLobbyCode] = useState<string>('asd');
-  const [playerId, setPlayerId] = useState<string | null>(null);
-  const [gameState, setGameState] = useState<any>(null);
-  const [socket, setSocket] = useState<Socket | null>(null)
+  const [username, setUsername] = useState<string>('');
+  const [lobbyCode, setLobbyCode] = useState<string>('');
+  const [socket, setSocket] = useState<Socket | null>(null);
 
-  useEffect(() => {
-    if (socket){
-      socket.on('connect', () => {
-        console.log('Connected to server');
-      });
-  
-      socket.on('disconnect', () => {
-        console.log('Disconnected from server');
-      });
-  
-      socket.on('gameStateUpdate', (state: any) => {
-        setGameState(state);
-      });
-  
-      return () => {
-        socket.off('connect');
-        socket.off('disconnect');
-        socket.off('gameStateUpdate');
-      };
-    }
-  }, [socket]);
+  const [roundData, setRoundData] = useState<any>({})
+  const [isQuiz, setIsQuiz] = useState<boolean>(false)
 
-  const handleSocketDisconnect = () => {
-    if (socket === null) return
-    socket.disconnect()
-  }
+  const handleConnectionInit = useCallback(() => {
+    const newSocket = io('http://localhost:5000', {
+      transports: ['websocket', 'polling'],
+      query: {
+        param1: 'value1',
+        param2: 'value2'
+      }
+    });
 
-  const handleConnectionInit = () => {
-    handleSocketDisconnect()
-    console.log("Setting socket")
-    setSocket(io('http://localhost:5000', {
-      transports: ['websocket', 'polling']
-    }))
-  }
+    newSocket.on('connect', () => {
+      console.log('Connected to server');
+    });
 
-  const handleInputChange = useCallback((setter: React.Dispatch<React.SetStateAction<string>>) => (event: React.ChangeEvent<HTMLInputElement>) => {
-    setter(event.target.value);
+    newSocket.on('disconnect', () => {
+      console.log('Disconnected from server');
+    });
+
+    newSocket.on('round', (data: string) => {
+      console.log(`ROUND: ${data}`)
+      const parsed = JSON.parse(data);
+      if (parsed.type === "quiz") {
+        setIsQuiz(true)
+        setRoundData(parsed)
+      }
+    })
+
+    newSocket.on('message', (message: string) => {
+      console.log(message);
+    });
+
+    setSocket(newSocket);
+
+    return () => {
+      if (newSocket) {
+        newSocket.disconnect();
+        setSocket(null);
+      }
+    };
   }, []);
 
+  const handleSocketDisconnect = () => {
+    if (socket) {
+      socket.disconnect();
+      setSocket(null);
+      console.log("Socket disconnected");
+    }
+  };
+
+  const handleQuizAnswer = (option: number) => {
+    if(socket === null) return
+    const answer = {
+      username: username,
+      lobbyCode: lobbyCode, 
+      answer: option
+    }
+    socket.emit("answer", JSON.stringify(answer))
+    setIsQuiz(false)
+    setRoundData({})
+  }
+
+  const QuizComponent = () => {
+    return (
+      <Box>
+        <Typography variant='h6'>Quiz</Typography>
+        <Typography variant='h6'>{roundData.question}</Typography>
+        <Button variant="contained" onClick={() => handleQuizAnswer(1)}>
+          {roundData.option1}
+        </Button>
+        <Button variant="contained" onClick={() => handleQuizAnswer(2)}>
+          {roundData.option2}
+        </Button>
+        <Button variant="contained" onClick={() => handleQuizAnswer(3)}>
+          {roundData.option3}
+        </Button>
+        <Button variant="contained" onClick={() => handleQuizAnswer(4)}>
+          {roundData.option4}
+        </Button>
+      </Box>
+    )
+  }
+
+  const JoinLobbyComponent = (
+    <Box>
+      <Typography variant="h6">Game Component</Typography>
+      <Box>
+        <FormControl>
+          <InputLabel>Username</InputLabel>
+          <Input value={username} onChange={(event) => setUsername(event.target.value)} />
+        </FormControl>
+        <FormControl>
+          <InputLabel>Lobby Code</InputLabel>
+          <Input value={lobbyCode} onChange={(event) => setLobbyCode(event.target.value)} />
+        </FormControl>
+        <Button variant="contained" onClick={handleConnectionInit}>
+          Connect
+        </Button>
+      </Box>
+    </Box>
+  );
+
   return (
-    <div>
-      <h1>Game Component</h1>
-      <div>
-        <label>
-          Username:
-          <input type="text" value={username} onChange={handleInputChange(setUsername)} />
-        </label>
-      </div>
-      <div>
-        <label>
-          Lobby Code:
-          <input type="text" value={lobbyCode} onChange={handleInputChange(setLobbyCode)} />
-        </label>
-      </div>
-      <button onClick={handleConnectionInit}>Send Message</button>
-      <p>Player ID: {playerId}</p>
-      <div>
-        <h2>Game State:</h2>
-        <pre>{JSON.stringify(gameState, null, 2)}</pre>
-      </div>
-    </div>
+    <Container>
+      {socket === null && JoinLobbyComponent}
+      {socket !== null && (
+        <Box>
+          <Typography variant="h2">Connected!</Typography>
+          <Typography>Lobby Code: {lobbyCode}</Typography>
+          <Typography>Username: {username}</Typography>
+
+          <Button variant="contained" onClick={handleSocketDisconnect}>
+            Disconnect
+          </Button>
+          {isQuiz &&
+            <QuizComponent />
+          }
+        </Box>
+      )}
+    </Container>
   );
 };
 
