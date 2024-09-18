@@ -1,4 +1,4 @@
-import { Box, Typography, FormControl, InputLabel, Input, Button, Container } from '@mui/material';
+import { Box, Typography, FormControl, InputLabel, Input, Button, Container, List, ListItem, ListItemText } from '@mui/material';
 import React, { useState, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 
@@ -9,13 +9,14 @@ const GameComponent: React.FC = () => {
 
   const [roundData, setRoundData] = useState<any>({})
   const [isQuiz, setIsQuiz] = useState<boolean>(false)
+  const [isLeaderboard, setIsLeaderboard] = useState<boolean>(false)
 
   const handleConnectionInit = useCallback(() => {
     const newSocket = io('http://localhost:5000', {
       transports: ['websocket', 'polling'],
       query: {
-        param1: 'value1',
-        param2: 'value2'
+        lobbyCode: lobbyCode,
+        username: username
       }
     });
 
@@ -28,10 +29,15 @@ const GameComponent: React.FC = () => {
     });
 
     newSocket.on('round', (data: string) => {
-      console.log(`ROUND: ${data}`)
       const parsed = JSON.parse(data);
       if (parsed.type === "quiz") {
+        setIsLeaderboard(false)
         setIsQuiz(true)
+        setRoundData(parsed)
+      }
+      if (parsed.type === "leaderboard") {
+        setIsQuiz(false)
+        setIsLeaderboard(true)
         setRoundData(parsed)
       }
     })
@@ -48,7 +54,7 @@ const GameComponent: React.FC = () => {
         setSocket(null);
       }
     };
-  }, []);
+  }, [lobbyCode, username]);
 
   const handleSocketDisconnect = () => {
     if (socket) {
@@ -59,15 +65,30 @@ const GameComponent: React.FC = () => {
   };
 
   const handleQuizAnswer = (option: number) => {
-    if(socket === null) return
+    if (socket === null) return
     const answer = {
       username: username,
-      lobbyCode: lobbyCode, 
+      lobbyCode: lobbyCode,
       answer: option
     }
     socket.emit("answer", JSON.stringify(answer))
     setIsQuiz(false)
     setRoundData({})
+  }
+
+  const LeaderboardComponent = () => {
+    return (
+      <Box>
+        <Typography variant='h6'>Leaderboard</Typography>
+        <List>
+        {roundData.players.map((player: { username: any; score: any; }, index: number) => (
+          <ListItem key={index}>
+            <ListItemText primary={`${index + 1}. ${player.username}`} secondary={`Score: ${player.score}`} />
+          </ListItem>
+        ))}
+      </List>
+      </Box>
+    )
   }
 
   const QuizComponent = () => {
@@ -124,6 +145,9 @@ const GameComponent: React.FC = () => {
           </Button>
           {isQuiz &&
             <QuizComponent />
+          }
+          {isLeaderboard &&
+            <LeaderboardComponent />
           }
         </Box>
       )}
