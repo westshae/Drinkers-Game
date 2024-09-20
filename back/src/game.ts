@@ -9,6 +9,7 @@ class Game {
         if (!(lobbyCode in this.game)) {
             this.game[lobbyCode] = {
                 lobbyCode: lobbyCode,
+                nextRoundType: "instruction",
                 currentState: quizState,
                 players: {}
             };
@@ -21,6 +22,12 @@ class Game {
                 score: 0,
                 leaderboardDisplayed: false
             };
+        }
+    }
+
+    removePlayerFromLobby(lobbyCode: string, username: string) {
+        if(username in this.game[lobbyCode].players){
+            delete this.game[lobbyCode].players[username]
         }
     }
 
@@ -94,16 +101,44 @@ class Game {
     }
 
     hasPlayerSeenLeaderboard(lobbyCode: string, username: string) {
-        return this.game[lobbyCode].players[username].leaderboardDisplayed
+        const player = this.game[lobbyCode].players[username]
+        if(player){
+            return this.game[lobbyCode].players[username].leaderboardDisplayed 
+        } else {
+            return false;
+        }
+        
     }
 
     playerSawLeaderboard(lobbyCode: string, username: string) {
-        this.game[lobbyCode].players[username].leaderboardDisplayed = true
+        const player = this.game[lobbyCode].players[username]
+        if(player){
+            return this.game[lobbyCode].players[username].leaderboardDisplayed = true
+        }
     }
 
-    setNewRoundData(lobbyCode: string, type: string) {
-        const state = this.getRoundState(type);
+    setNewRoundData(lobbyCode: string) {
+        const state = this.getRoundState(this.game[lobbyCode].nextRoundType);
         this.game[lobbyCode].currentState = state
+    }
+
+    setNextRoundType(lobbyCode: string, type: string) {
+        this.game[lobbyCode].nextRoundType = type;
+    }
+
+    debugPrintGame() {
+        console.log(JSON.stringify(this.game))
+    }
+
+    debugPrintLobby(lobbyCode: string){
+        console.log(JSON.stringify(this.game[lobbyCode]))
+    }
+    
+    debugPlayers(lobbyCode: string) {
+        console.log(JSON.stringify(this.game[lobbyCode].players))
+    }
+    debugPlayer(lobbyCode: string, username: string) {
+        console.log(JSON.stringify(this.game[lobbyCode].players[username]))
     }
 }
 

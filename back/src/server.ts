@@ -18,7 +18,10 @@ const io = new SocketIOServer(server, {
 io.on('connection', (socket) => {
   console.log('New Socket.IO connection');
 
-  socket.on('disconnect', () => { console.log('Socket.IO connection disconnected'); });
+  socket.on('disconnect', () => { 
+    game.removePlayerFromLobby(lobbyCode, username)
+    console.log('Socket.IO connection disconnected'); 
+  });
 
   socket.on('answer', (message) => { game.acceptAnswer(message) })
 
@@ -44,12 +47,15 @@ io.on('connection', (socket) => {
       const currentRoundType = game.getRoundType(currentLobbyCode)
       switch (currentRoundType) {
         case "instruction":
-          game.setNewRoundData(currentLobbyCode, "quiz")
+          game.setNewRoundData(currentLobbyCode)
+          game.setNextRoundType(currentLobbyCode, "quiz")
           emitRound(socket, game.getRoundEmitQuestion(currentLobbyCode))
 
           break;
         case "quiz":
-          game.setNewRoundData(currentLobbyCode, "instruction")
+          game.setNewRoundData(currentLobbyCode)
+          game.setNextRoundType(currentLobbyCode, "instruction")
+
           emitRound(socket, game.getRoundEmitQuestion(currentLobbyCode))
 
           break;
