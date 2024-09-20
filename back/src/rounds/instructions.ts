@@ -4,7 +4,6 @@ import { Socket } from "socket.io"
 const instructionState = {
     roundType: "instruction",
     playersAnswered: {},
-    leaderboardDisplayed: false,
     answer: 0
 }
 

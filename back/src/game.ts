@@ -18,7 +18,8 @@ class Game {
     addNewPlayersToLobby(lobbyCode: string, username: string) {
         if (!(username in this.game[lobbyCode].players)) {
             this.game[lobbyCode].players[username] = {
-                score: 0
+                score: 0,
+                leaderboardDisplayed: false
             };
         }
     }
@@ -40,7 +41,7 @@ class Game {
         const { lobbyCode, username, answer } = parsed;
         if (lobbyCode in this.game && username in this.game[lobbyCode].players && !(username in this.game[lobbyCode].currentState.playersAnswered)) { // Username not in answers
             this.game[lobbyCode].currentState.playersAnswered[username] = {
-                answer: answer
+                answer: answer,
             };
         }
     }
@@ -81,12 +82,10 @@ class Game {
 
     getLeaderboard(lobbyCode: string) {
         const players = Object.entries(this.game[lobbyCode].players)
-            .map(([username, { score }]) => ({ username, score }));
+            .map(([username, { score }]) => ({ username, score,  }));
 
         // Sort the players by score in descending order
         players.sort((a, b) => b.score - a.score);
-
-        this.game[lobbyCode].currentState.leaderboardDisplayed = true
 
         return {
             type: "leaderboard",
@@ -94,8 +93,12 @@ class Game {
         }
     }
 
-    alreadyDisplayedLeaderboard(lobbyCode: string) {
-        return this.game[lobbyCode].currentState.leaderboardDisplayed
+    hasPlayerSeenLeaderboard(lobbyCode: string, username: string) {
+        return this.game[lobbyCode].players[username].leaderboardDisplayed
+    }
+
+    playerSawLeaderboard(lobbyCode: string, username: string) {
+        this.game[lobbyCode].players[username].leaderboardDisplayed = true
     }
 
     setNewRoundData(lobbyCode: string, type: string) {

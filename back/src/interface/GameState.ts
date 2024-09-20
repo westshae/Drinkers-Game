@@ -4,7 +4,6 @@ export default interface GameState {
         currentState: {
             roundType: string;
             answer: any;
-            leaderboardDisplayed: boolean;
             playersAnswered: {
                 [username: string]: {
                     answer: any
@@ -14,6 +13,7 @@ export default interface GameState {
         players: {
             [username: string]: {
                 score: number;
+                leaderboardDisplayed: boolean;
             };
         };
     };

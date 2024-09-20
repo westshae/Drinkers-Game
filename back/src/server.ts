@@ -31,12 +31,10 @@ io.on('connection', (socket) => {
 
   setInterval(() => {
     for (const currentLobbyCode of game.getAllLobbyCodes()) {
-      console.log(JSON.stringify(game))
-      console.log(!game.alreadyDisplayedLeaderboard(currentLobbyCode))
-      console.log(game.haveAllPlayersAnswered(currentLobbyCode))
-      if (!game.alreadyDisplayedLeaderboard(currentLobbyCode) && game.haveAllPlayersAnswered(currentLobbyCode)) {
+      if(!game.hasPlayerSeenLeaderboard(currentLobbyCode, username) && game.haveAllPlayersAnswered(currentLobbyCode)){
         game.scorePlayers(currentLobbyCode)
         emitRound(socket, game.getLeaderboard(currentLobbyCode))
+        game.playerSawLeaderboard(currentLobbyCode, username)
       }
     }
   }, 1 * 1000)
