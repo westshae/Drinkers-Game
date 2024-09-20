@@ -21,6 +21,7 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => { 
     game.removePlayerFromLobby(lobbyCode, username)
     console.log('Socket.IO connection disconnected'); 
+    game.removeLobbyIfZeroPlayers(lobbyCode)
   });
 
   socket.on('answer', (message) => { game.acceptAnswer(message) })

@@ -31,6 +31,12 @@ class Game {
         }
     }
 
+    removeLobbyIfZeroPlayers(lobbyCode: string) {
+        if(Object.keys(this.game[lobbyCode].players).length === 0){
+            delete this.game[lobbyCode]
+        }
+    }
+
     getRoundType(lobbyCode: string) {
         return this.game[lobbyCode].currentState.roundType;
     }
