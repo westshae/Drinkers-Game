@@ -33,10 +33,6 @@ io.on('connection', (socket) => {
     for (const currentLobbyCode of game.getAllLobbyCodes()) {
       const currentRoundType = game.getRoundType(currentLobbyCode)
       switch (currentRoundType) {
-        case "init":
-          game.setNewRoundData(currentLobbyCode, "instruction")
-          emitRound(socket, game.getRoundEmitQuestion(currentLobbyCode))
-          break;
         case "instruction":
           if (game.haveAllPlayersAnswered(currentLobbyCode)) {
             game.scorePlayers(currentLobbyCode)
@@ -58,7 +54,7 @@ io.on('connection', (socket) => {
       }
     }
     console.log("interval");
-  }, 5 * 1000);
+  }, 15 * 1000);
 });
 
 const emitRound = (socket: Socket, roundData: any) => {

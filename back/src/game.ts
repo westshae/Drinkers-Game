@@ -1,6 +1,5 @@
 import GameState from "./interface/GameState";
 import { quizQuestions, quizState } from "./rounds/quiz";
-import { initQueston, initState } from "./rounds/init";
 import { instructionQuestions, instructionState } from "./rounds/instructions";
 import { leaderboardState } from "./rounds/leaderboard";
 
@@ -11,7 +10,7 @@ class Game {
         if (!(lobbyCode in this.game)) {
             this.game[lobbyCode] = {
                 lobbyCode: lobbyCode,
-                currentState: initState,
+                currentState: quizState,
                 players: {}
             };
         }
@@ -60,8 +59,6 @@ class Game {
     getRoundEmitQuestion(lobbyCode: string) {
         const roundType = this.getRoundType(lobbyCode)
         switch (roundType) {
-            case "init":
-                return initQueston[0]
             case "instruction":
                 return instructionQuestions[0]
             case "quiz":
@@ -73,8 +70,6 @@ class Game {
 
     getRoundState(type: string) {
         switch (type) {
-            case "init":
-                return initState
             case "instruction":
                 return instructionState
             case "quiz":
