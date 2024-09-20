@@ -1,33 +1,15 @@
 import express from 'express';
 import http from 'http';
 import { Socket, Server as SocketIOServer } from 'socket.io';
+import Game from './Game';
 
 const app = express();
 const port = 5000;
 
 const server = http.createServer(app);
 
-interface GameState {
-  [lobbyCode: string]: {
-    lobbyCode: string;
-    currentState: {
-      roundType: string;
-      answer: any;
-      playersAnswered: {
-        [username: string]: {
-          answer: any
-        }
-      }
-    }
-    players: {
-      [username: string]: {
-        score: number;
-      };
-    };
-  };
-}
+const game = new Game();
 
-let game: GameState = {}
 
 const io = new SocketIOServer(server, {
   transports: ['websocket', 'polling'],
@@ -38,57 +20,40 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => { console.log('Socket.IO connection disconnected'); });
 
-  socket.on('answer', (message) => {
-    acceptAnswer(message)
-  })
-  // const { lobbyCode, username } = socket.handshake.query;
-  // console.log("test" + socket.handshake.query["lobbyCode"])
-  // console.log(socket.handshake.query)
+  socket.on('answer', (message) => { game.acceptAnswer(message) })
 
-  // if (!(typeof lobbyCode === 'string' && typeof username === 'string')) return
+  const { lobbyCode, username } = getParams(socket) || (() => { throw new Error("Invalid parameters: lobbyCode or username is missing."); })()
 
-  // console.log("connection socket on")
-  // console.log(`${lobbyCode} ${username}`)
+  game.addNewLobby(lobbyCode)
+  game.addNewPlayersToLobby(lobbyCode, username)
 
-  console.log("connection")
-  const { lobbyCode, username } = {
-    lobbyCode: socket.handshake.query.lobbyCode?.toString(),
-    username: socket.handshake.query.username?.toString()
-  };
+  emitRound(socket, game.getRoundEmitQuestion(lobbyCode))
 
-  if (!lobbyCode || !username) return
-  if (!(lobbyCode in game)) {
-    game[lobbyCode] = {
-      lobbyCode: lobbyCode,
-      currentState: {
-        roundType: "init",
-        playersAnswered: {},
-        answer: undefined
-      },
-      players: {}
-    }
-  }
-
-  if (!(username in game[lobbyCode].players)) {
-    game[lobbyCode].players[username] = {
-      score: 0
-    }
-  }
   setInterval(() => {
-    for (const currentLobby of Object.keys(game)) {
-      switch (game[currentLobby].currentState.roundType) {
+    for (const currentLobbyCode of game.getAllLobbyCodes()) {
+      const currentRoundType = game.getRoundType(currentLobbyCode)
+      switch (currentRoundType) {
         case "init":
-          setQuizRound(currentLobby, socket)
+          game.setNewRoundData(currentLobbyCode, "instruction")
+          emitRound(socket, game.getRoundEmitQuestion(currentLobbyCode))
+          break;
+        case "instruction":
+          if (game.haveAllPlayersAnswered(currentLobbyCode)) {
+            game.scorePlayers(currentLobbyCode)
+            game.setNewRoundData(currentLobbyCode, "quiz")
+            emitRound(socket, game.getRoundEmitQuestion(currentLobbyCode))
+          }
           break;
         case "quiz":
-          if (Object.keys(game[currentLobby].players).length === Object.keys(game[currentLobby].currentState.playersAnswered).length){
-            //all answered
-            scorePlayers(lobbyCode)
-            setLeaderboardRound(lobbyCode, socket)
+          if (game.haveAllPlayersAnswered(currentLobbyCode)) {
+            game.scorePlayers(currentLobbyCode)
+            game.setNewRoundData(currentLobbyCode, "leaderboard")
+            emitRound(socket, game.getRoundEmitQuestion(currentLobbyCode))
           }
           break;
         case "leaderboard":
-          setQuizRound(currentLobby, socket)
+          game.setNewRoundData(currentLobbyCode, "instruction")
+          emitRound(socket, game.getRoundEmitQuestion(currentLobbyCode))
           break;
       }
     }
@@ -96,61 +61,18 @@ io.on('connection', (socket) => {
   }, 5 * 1000);
 });
 
-const setLeaderboardRound: (lobbyCode: string, socket: Socket) => void = (lobbyCode: string, socket: Socket) => {
-  game[lobbyCode].currentState = {
-    roundType: "leaderboard",
-    playersAnswered: {},
-    answer: 0
-  }
-
-  const players = Object.entries(game[lobbyCode].players)
-  .map(([username, { score }]) => ({ username, score }));
-
-  // Sort the players by score in descending order
-  players.sort((a, b) => b.score - a.score);
-
-
-  socket.emit('round', JSON.stringify({
-    type: "leaderboard",
-    players: players
-  }))
+const emitRound = (socket: Socket, roundData: any) => {
+  socket.emit('round', roundData)
 }
 
-const setQuizRound: (lobbyCode: string, socket: Socket) => void = (lobbyCode: string, socket: Socket) => {
-  game[lobbyCode].currentState = {
-    roundType: "quiz",
-    playersAnswered: {},
-    answer: 1
-  }
+const getParams = (socket: Socket) => {
+  const { lobbyCode, username } = {
+    lobbyCode: socket.handshake.query.lobbyCode?.toString(),
+    username: socket.handshake.query.username?.toString()
+  };
 
-  socket.emit('round', JSON.stringify({
-    type: "quiz",
-    question: "What noise does a cow make?",
-    option1: "Oink",
-    option2: "Moo",
-    option3: "Bark",
-    option4: "Meow"
-  }))
-}
-
-const acceptAnswer = (message: string) => {
-  const parsed = JSON.parse(message)
-  const { lobbyCode, username, answer } = parsed
-  if (lobbyCode in game && username in game[lobbyCode].players && !(username in game[lobbyCode].currentState.playersAnswered)) { // Username not in answers
-    game[lobbyCode].currentState.playersAnswered[username] = {
-      answer: answer
-    }
-  }
-}
-
-const scorePlayers = (lobbyCode: string) => {
-  const answer = game[lobbyCode].currentState.answer
-  for (let username of Object.keys(game[lobbyCode].currentState.playersAnswered)){
-    const playerAnswer = game[lobbyCode].currentState.playersAnswered[username].answer
-    if (answer === playerAnswer){
-      game[lobbyCode].players[username].score += 1
-    }
-  }
+  if (!lobbyCode || !username) return
+  return { lobbyCode, username }
 }
 
 server.listen(port, () => {

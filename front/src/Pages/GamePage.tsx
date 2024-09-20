@@ -1,4 +1,4 @@
-import { Box, Typography, FormControl, InputLabel, Input, Button, Container, List, ListItem, ListItemText } from '@mui/material';
+import { Box, Typography, FormControl, InputLabel, Input, Button, Container, List, ListItem, ListItemText, CircularProgress } from '@mui/material';
 import React, { useState, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 
@@ -10,6 +10,15 @@ const GameComponent: React.FC = () => {
   const [roundData, setRoundData] = useState<any>({})
   const [isQuiz, setIsQuiz] = useState<boolean>(false)
   const [isLeaderboard, setIsLeaderboard] = useState<boolean>(false)
+  const [isInstruction, setIsInstruction] = useState<boolean>(false)
+  const [isInit, setIsInit] = useState<boolean>(false)
+
+  const resetRoundTypeStates = () => {
+    setIsLeaderboard(false)
+    setIsQuiz(false)
+    setIsInstruction(false)
+    setIsInit(false)
+  }
 
   const handleConnectionInit = useCallback(() => {
     const newSocket = io('http://localhost:5000', {
@@ -28,17 +37,28 @@ const GameComponent: React.FC = () => {
       console.log('Disconnected from server');
     });
 
-    newSocket.on('round', (data: string) => {
-      const parsed = JSON.parse(data);
-      if (parsed.type === "quiz") {
-        setIsLeaderboard(false)
-        setIsQuiz(true)
-        setRoundData(parsed)
-      }
-      if (parsed.type === "leaderboard") {
-        setIsQuiz(false)
-        setIsLeaderboard(true)
-        setRoundData(parsed)
+    newSocket.on('round', (data: {type: string, question: string}) => {
+      switch (data.type) {
+        case "init":
+          resetRoundTypeStates()
+          setIsInit(true)
+          setRoundData(data)
+          break;
+        case "quiz":
+          resetRoundTypeStates()
+          setIsQuiz(true)
+          setRoundData(data)
+          break;
+        case "leaderboard":
+          resetRoundTypeStates()
+          setIsLeaderboard(true)
+          setRoundData(data)
+          break;
+        case "instruction":
+          resetRoundTypeStates()
+          setIsInstruction(true)
+          setRoundData(data)
+          break;
       }
     })
 
@@ -75,22 +95,52 @@ const GameComponent: React.FC = () => {
     setIsQuiz(false)
     setRoundData({})
   }
+  const handleInstructionAnswer = () => {
+    if (socket === null) return
+    const answer = {
+      username: username,
+      lobbyCode: lobbyCode,
+      answer: 0
+    }
+    socket.emit("answer", JSON.stringify(answer))
+    setIsInstruction(false)
+    setRoundData({})
+  }
 
   const LeaderboardComponent = () => {
     return (
       <Box>
         <Typography variant='h6'>Leaderboard</Typography>
         <List>
-        {roundData.players.map((player: { username: any; score: any; }, index: number) => (
-          <ListItem key={index}>
-            <ListItemText primary={`${index + 1}. ${player.username}`} secondary={`Score: ${player.score}`} />
-          </ListItem>
-        ))}
-      </List>
+          {roundData.players.map((player: { username: any; score: any; }, index: number) => (
+            <ListItem key={index}>
+              <ListItemText primary={`${index + 1}. ${player.username}`} secondary={`Score: ${player.score}`} />
+            </ListItem>
+          ))}
+        </List>
       </Box>
     )
   }
 
+  const InstructionComponent = () => {
+    return (
+      <Box>
+        <Typography variant='h6'>Instruction</Typography>
+        <Typography variant='h6'>{roundData.instruction}</Typography>
+        <Button variant="contained" onClick={() => handleInstructionAnswer()}>
+          Click on completion
+        </Button>
+      </Box>
+    )
+  }
+  const InitComponent = () => {
+    return (
+      <Box>
+        <Typography variant='h6'>Welcome</Typography>
+        <Typography variant='h6'>{roundData.question}</Typography>
+      </Box>
+    )
+  }
   const QuizComponent = () => {
     return (
       <Box>
@@ -148,6 +198,15 @@ const GameComponent: React.FC = () => {
           }
           {isLeaderboard &&
             <LeaderboardComponent />
+          }
+          {isInstruction &&
+            <InstructionComponent />
+          }
+          {isInit &&
+            <InitComponent />
+          }
+          {!isLeaderboard && !isQuiz && !isInstruction && !isInit &&
+            <CircularProgress />
           }
         </Box>
       )}
