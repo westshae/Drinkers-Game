@@ -4,6 +4,7 @@ export default interface GameState {
         currentState: {
             roundType: string;
             answer: any;
+            leaderboardDisplayed: boolean;
             playersAnswered: {
                 [username: string]: {
                     answer: any

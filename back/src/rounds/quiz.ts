@@ -3,6 +3,7 @@ import { Socket } from "socket.io"
 const quizState = {
     roundType: "quiz",
     playersAnswered: {},
+    leaderboardDisplayed: false,
     answer: 1
 }
 

@@ -31,25 +31,29 @@ io.on('connection', (socket) => {
 
   setInterval(() => {
     for (const currentLobbyCode of game.getAllLobbyCodes()) {
+      console.log(JSON.stringify(game))
+      console.log(!game.alreadyDisplayedLeaderboard(currentLobbyCode))
+      console.log(game.haveAllPlayersAnswered(currentLobbyCode))
+      if (!game.alreadyDisplayedLeaderboard(currentLobbyCode) && game.haveAllPlayersAnswered(currentLobbyCode)) {
+        game.scorePlayers(currentLobbyCode)
+        emitRound(socket, game.getLeaderboard(currentLobbyCode))
+      }
+    }
+  }, 1 * 1000)
+
+  setInterval(() => {
+    for (const currentLobbyCode of game.getAllLobbyCodes()) {
       const currentRoundType = game.getRoundType(currentLobbyCode)
       switch (currentRoundType) {
         case "instruction":
-          if (game.haveAllPlayersAnswered(currentLobbyCode)) {
-            game.scorePlayers(currentLobbyCode)
-            game.setNewRoundData(currentLobbyCode, "quiz")
-            emitRound(socket, game.getRoundEmitQuestion(currentLobbyCode))
-          }
+          game.setNewRoundData(currentLobbyCode, "quiz")
+          emitRound(socket, game.getRoundEmitQuestion(currentLobbyCode))
+
           break;
         case "quiz":
-          if (game.haveAllPlayersAnswered(currentLobbyCode)) {
-            game.scorePlayers(currentLobbyCode)
-            game.setNewRoundData(currentLobbyCode, "leaderboard")
-            emitRound(socket, game.getRoundEmitQuestion(currentLobbyCode))
-          }
-          break;
-        case "leaderboard":
           game.setNewRoundData(currentLobbyCode, "instruction")
           emitRound(socket, game.getRoundEmitQuestion(currentLobbyCode))
+
           break;
       }
     }

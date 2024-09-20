@@ -1,7 +1,6 @@
 import GameState from "./interface/GameState";
 import { quizQuestions, quizState } from "./rounds/quiz";
 import { instructionQuestions, instructionState } from "./rounds/instructions";
-import { leaderboardState } from "./rounds/leaderboard";
 
 class Game {
     private game: GameState = {};
@@ -63,8 +62,8 @@ class Game {
                 return instructionQuestions[0]
             case "quiz":
                 return quizQuestions[0]
-            case "leaderboard":
-                return this.getLeaderboard(lobbyCode)
+            default:
+                throw new Error("roundType doesn't match")
         }
     }
 
@@ -74,8 +73,6 @@ class Game {
                 return instructionState
             case "quiz":
                 return quizState
-            case "leaderboard":
-                return leaderboardState
             default:
                 throw new Error("roundType doesn't match")
         }
@@ -89,10 +86,16 @@ class Game {
         // Sort the players by score in descending order
         players.sort((a, b) => b.score - a.score);
 
+        this.game[lobbyCode].currentState.leaderboardDisplayed = true
+
         return {
             type: "leaderboard",
             players: players
         }
+    }
+
+    alreadyDisplayedLeaderboard(lobbyCode: string) {
+        return this.game[lobbyCode].currentState.leaderboardDisplayed
     }
 
     setNewRoundData(lobbyCode: string, type: string) {
