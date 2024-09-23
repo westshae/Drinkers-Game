@@ -1,7 +1,7 @@
 import express from 'express';
 import http from 'http';
 import { Socket, Server as SocketIOServer } from 'socket.io';
-import Game from './Game';
+import Game from './game';
 
 const app = express();
 const port = 5000;
@@ -45,6 +45,8 @@ io.on('connection', (socket) => {
 
   setInterval(() => {
     for (const currentLobbyCode of game.getAllLobbyCodes()) {
+      game.resetPlayerSeenleaderboard(currentLobbyCode)
+
       const currentRoundType = game.getRoundType(currentLobbyCode)
       switch (currentRoundType) {
         case "instruction":

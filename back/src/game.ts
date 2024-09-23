@@ -122,6 +122,12 @@ class Game {
             return this.game[lobbyCode].players[username].leaderboardDisplayed = true
         }
     }
+    
+    resetPlayerSeenleaderboard(lobbyCode: string) {
+        for (let username in this.game[lobbyCode].players){
+            this.game[lobbyCode].players[username].leaderboardDisplayed = false
+        }
+    }
 
     setNewRoundData(lobbyCode: string) {
         const state = this.getRoundState(this.game[lobbyCode].nextRoundType);
