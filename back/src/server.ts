@@ -16,6 +16,13 @@ const io = new SocketIOServer(server, {
 });
 
 io.on('connection', (socket) => {
+  const { lobbyCode, username } = getParams(socket) || (() => { throw new Error("Invalid parameters: lobbyCode or username is missing."); })()
+
+  game.addNewLobby(lobbyCode)
+  game.addNewPlayersToLobby(lobbyCode, username)
+
+  emitRound(socket, game.getRoundEmitQuestion(lobbyCode))
+
   console.log('New Socket.IO connection');
 
   socket.on('disconnect', () => { 
@@ -24,43 +31,27 @@ io.on('connection', (socket) => {
     game.removeLobbyIfZeroPlayers(lobbyCode)
   });
 
-  socket.on('answer', (message) => { game.acceptAnswer(message) })
+  socket.on('answer', (message) => { 
+    emitRound(socket, game.acceptAnswer(message))
+  });
 
-  const { lobbyCode, username } = getParams(socket) || (() => { throw new Error("Invalid parameters: lobbyCode or username is missing."); })()
-
-  game.addNewLobby(lobbyCode)
-  game.addNewPlayersToLobby(lobbyCode, username)
-
-  emitRound(socket, game.getRoundEmitQuestion(lobbyCode))
 
   setInterval(() => {
     for (const currentLobbyCode of game.getAllLobbyCodes()) {
-      if(!game.hasPlayerSeenLeaderboard(currentLobbyCode, username) && game.haveAllPlayersAnswered(currentLobbyCode)){
-        game.scorePlayers(currentLobbyCode)
-        emitRound(socket, game.getLeaderboard(currentLobbyCode))
-        game.playerSawLeaderboard(currentLobbyCode, username)
-      }
-    }
-  }, 1 * 1000)
-
-  setInterval(() => {
-    for (const currentLobbyCode of game.getAllLobbyCodes()) {
-      game.resetPlayerSeenleaderboard(currentLobbyCode)
-
       const currentRoundType = game.getRoundType(currentLobbyCode)
+
       switch (currentRoundType) {
         case "instruction":
+          console.log("instruction")
           game.setNewRoundData(currentLobbyCode)
           game.setNextRoundType(currentLobbyCode, "quiz")
           emitRound(socket, game.getRoundEmitQuestion(currentLobbyCode))
-
           break;
         case "quiz":
+          console.log("quiz")
           game.setNewRoundData(currentLobbyCode)
           game.setNextRoundType(currentLobbyCode, "instruction")
-
           emitRound(socket, game.getRoundEmitQuestion(currentLobbyCode))
-
           break;
       }
     }

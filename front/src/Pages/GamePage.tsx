@@ -9,12 +9,12 @@ const GameComponent: React.FC = () => {
 
   const [roundData, setRoundData] = useState<any>({})
   const [isQuiz, setIsQuiz] = useState<boolean>(false)
-  const [isLeaderboard, setIsLeaderboard] = useState<boolean>(false)
+  const [isAnswer, setIsAnswer] = useState<boolean>(false)
   const [isInstruction, setIsInstruction] = useState<boolean>(false)
   const [isInit, setIsInit] = useState<boolean>(false)
 
   const resetRoundTypeStates = () => {
-    setIsLeaderboard(false)
+    setIsAnswer(false)
     setIsQuiz(false)
     setIsInstruction(false)
     setIsInit(false)
@@ -38,6 +38,8 @@ const GameComponent: React.FC = () => {
     });
 
     newSocket.on('round', (data: {type: string, question: string}) => {
+      console.log(data)
+
       switch (data.type) {
         case "init":
           resetRoundTypeStates()
@@ -49,9 +51,9 @@ const GameComponent: React.FC = () => {
           setIsQuiz(true)
           setRoundData(data)
           break;
-        case "leaderboard":
+        case "answer":
           resetRoundTypeStates()
-          setIsLeaderboard(true)
+          setIsAnswer(true)
           setRoundData(data)
           break;
         case "instruction":
@@ -107,17 +109,16 @@ const GameComponent: React.FC = () => {
     setRoundData({})
   }
 
-  const LeaderboardComponent = () => {
+  const AnswerComponent = () => {
     return (
       <Box>
-        <Typography variant='h6'>Leaderboard</Typography>
-        <List>
-          {roundData.players.map((player: { username: any; score: any; }, index: number) => (
-            <ListItem key={index}>
-              <ListItemText primary={`${index + 1}. ${player.username}`} secondary={`Score: ${player.score}`} />
-            </ListItem>
-          ))}
-        </List>
+        <Typography variant='h6'>Answer</Typography>
+        {roundData.correct &&
+          <Typography variant='h4'>Just escaped drinking, lucky you.</Typography>
+        }
+        {!roundData.correct &&
+          <Typography variant='h4'>You failed! Drink up!</Typography>
+        }
       </Box>
     )
   }
@@ -196,8 +197,8 @@ const GameComponent: React.FC = () => {
           {isQuiz &&
             <QuizComponent />
           }
-          {isLeaderboard &&
-            <LeaderboardComponent />
+          {isAnswer &&
+            <AnswerComponent />
           }
           {isInstruction &&
             <InstructionComponent />
@@ -205,7 +206,7 @@ const GameComponent: React.FC = () => {
           {isInit &&
             <InitComponent />
           }
-          {!isLeaderboard && !isQuiz && !isInstruction && !isInit &&
+          {!isAnswer && !isQuiz && !isInstruction && !isInit &&
             <CircularProgress />
           }
         </Box>

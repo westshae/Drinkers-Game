@@ -11,28 +11,23 @@ class Game {
                 lobbyCode: lobbyCode,
                 nextRoundType: "instruction",
                 currentState: quizState,
-                players: {}
+                players: []
             };
         }
     }
 
     addNewPlayersToLobby(lobbyCode: string, username: string) {
-        if (!(username in this.game[lobbyCode].players)) {
-            this.game[lobbyCode].players[username] = {
-                score: 0,
-                leaderboardDisplayed: false
-            };
+        if(!this.game[lobbyCode].players.includes(username)) {
+            this.game[lobbyCode].players.push(username)
         }
     }
 
     removePlayerFromLobby(lobbyCode: string, username: string) {
-        if(username in this.game[lobbyCode].players){
-            delete this.game[lobbyCode].players[username]
-        }
+        this.game[lobbyCode].players.filter(player => player !== username);
     }
 
     removeLobbyIfZeroPlayers(lobbyCode: string) {
-        if(Object.keys(this.game[lobbyCode].players).length === 0){
+        if (Object.keys(this.game[lobbyCode].players).length === 0) {
             delete this.game[lobbyCode]
         }
     }
@@ -52,20 +47,35 @@ class Game {
     acceptAnswer(message: string) {
         const parsed = JSON.parse(message);
         const { lobbyCode, username, answer } = parsed;
-        if (lobbyCode in this.game && username in this.game[lobbyCode].players && !(username in this.game[lobbyCode].currentState.playersAnswered)) { // Username not in answers
-            this.game[lobbyCode].currentState.playersAnswered[username] = {
-                answer: answer,
-            };
-        }
-    }
+        if (!(lobbyCode in this.game)) throw new Error("This lobby doesn't exist")
 
-    scorePlayers(lobbyCode: string) {
-        const answer = this.game[lobbyCode].currentState.answer;
-        for (let username of Object.keys(this.game[lobbyCode].currentState.playersAnswered)) {
-            const playerAnswer = this.game[lobbyCode].currentState.playersAnswered[username].answer;
-            if (answer === playerAnswer) {
-                this.game[lobbyCode].players[username].score += 1;
-            }
+        if(this.game[lobbyCode].players.includes(username))
+        if(this.game[lobbyCode].currentState.playersAnswered.includes(username)) throw new Error("This player already answered")
+
+        this.game[lobbyCode].currentState.playersAnswered.push(username)
+
+        let correctAnswer = false;
+
+        switch(this.game[lobbyCode].currentState.roundType){
+            case "instruction":
+                const position = this.game[lobbyCode].currentState.playersAnswered.length
+                const half =  Math.ceil(this.game[lobbyCode].players.length / 2);
+
+                correctAnswer = position <= half
+                break
+            case "quiz":
+                correctAnswer = answer === this.game[lobbyCode].currentState.answer
+                break
+
+        }
+
+        if(correctAnswer){
+
+        }
+
+        return {
+            type: "answer",
+            correct: correctAnswer
         }
     }
 
@@ -93,42 +103,6 @@ class Game {
 
     }
 
-    getLeaderboard(lobbyCode: string) {
-        const players = Object.entries(this.game[lobbyCode].players)
-            .map(([username, { score }]) => ({ username, score,  }));
-
-        // Sort the players by score in descending order
-        players.sort((a, b) => b.score - a.score);
-
-        return {
-            type: "leaderboard",
-            players: players
-        }
-    }
-
-    hasPlayerSeenLeaderboard(lobbyCode: string, username: string) {
-        const player = this.game[lobbyCode].players[username]
-        if(player){
-            return this.game[lobbyCode].players[username].leaderboardDisplayed 
-        } else {
-            return false;
-        }
-        
-    }
-
-    playerSawLeaderboard(lobbyCode: string, username: string) {
-        const player = this.game[lobbyCode].players[username]
-        if(player){
-            return this.game[lobbyCode].players[username].leaderboardDisplayed = true
-        }
-    }
-    
-    resetPlayerSeenleaderboard(lobbyCode: string) {
-        for (let username in this.game[lobbyCode].players){
-            this.game[lobbyCode].players[username].leaderboardDisplayed = false
-        }
-    }
-
     setNewRoundData(lobbyCode: string) {
         const state = this.getRoundState(this.game[lobbyCode].nextRoundType);
         this.game[lobbyCode].currentState = state
@@ -142,25 +116,13 @@ class Game {
         console.log(JSON.stringify(this.game))
     }
 
-    debugPrintLobby(lobbyCode: string){
+    debugPrintLobby(lobbyCode: string) {
         console.log(JSON.stringify(this.game[lobbyCode]))
     }
-    
+
     debugPlayers(lobbyCode: string) {
         console.log(JSON.stringify(this.game[lobbyCode].players))
-    }
-    debugPlayer(lobbyCode: string, username: string) {
-        console.log(JSON.stringify(this.game[lobbyCode].players[username]))
     }
 }
 
 export default Game;
-
-//get/setCurrentRoundType
-//get/setCurrentRoundAnswer
-//getPlayersAnswered
-//addPlayerAnswered
-//addNewLobby
-//addNewPlayersToLobby
-//getPlayersInLobby
-//getPlayerScore

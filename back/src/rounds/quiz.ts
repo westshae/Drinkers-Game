@@ -2,7 +2,7 @@ import { Socket } from "socket.io"
 
 const quizState = {
     roundType: "quiz",
-    playersAnswered: {},
+    playersAnswered: [],
     answer: 1
 }
 

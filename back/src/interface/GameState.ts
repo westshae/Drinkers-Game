@@ -5,17 +5,8 @@ export default interface GameState {
         currentState: {
             roundType: string;
             answer: any;
-            playersAnswered: {
-                [username: string]: {
-                    answer: any
-                }
-            }
+            playersAnswered: string[]
         }
-        players: {
-            [username: string]: {
-                score: number;
-                leaderboardDisplayed: boolean;
-            };
-        };
+        players: string[]
     };
 }
