@@ -18,46 +18,46 @@ const io = new SocketIOServer(server, {
 io.on('connection', (socket) => {
   const { lobbyCode, username } = getParams(socket) || (() => { throw new Error("Invalid parameters: lobbyCode or username is missing."); })()
 
-  game.addNewLobby(lobbyCode)
+  const newLobbyMade = game.addNewLobby(lobbyCode)
   game.addNewPlayersToLobby(lobbyCode, username)
-
-  emitRound(socket, game.getRoundEmitQuestion(lobbyCode))
 
   console.log('New Socket.IO connection');
 
-  socket.on('disconnect', () => { 
+  socket.on('disconnect', () => {
     game.removePlayerFromLobby(lobbyCode, username)
-    console.log('Socket.IO connection disconnected'); 
     game.removeLobbyIfZeroPlayers(lobbyCode)
+    console.log('Socket.IO connection disconnected');
   });
 
-  socket.on('answer', (message) => { 
+  socket.on('answer', (message) => {
     emitRound(socket, game.acceptAnswer(message))
   });
 
-
-  setInterval(() => {
-    for (const currentLobbyCode of game.getAllLobbyCodes()) {
-      const currentRoundType = game.getRoundType(currentLobbyCode)
-      game.resetPlayersAnswered(currentLobbyCode)
-
-      switch (currentRoundType) {
-        case "instruction":
-          console.log("instruction")
-          game.setNewRoundData(currentLobbyCode)
-          game.setNextRoundType(currentLobbyCode, "quiz")
-          emitRound(socket, game.getRoundEmitQuestion(currentLobbyCode))
-          break;
-        case "quiz":
-          console.log("quiz")
-          game.setNewRoundData(currentLobbyCode)
-          game.setNextRoundType(currentLobbyCode, "instruction")
-          emitRound(socket, game.getRoundEmitQuestion(currentLobbyCode))
-          break;
-      }
-    }
-    console.log("interval");
-  }, 15 * 1000);
+  if (newLobbyMade) {
+    setInterval(() => {
+      const connectedSockets = io.sockets.sockets;
+      connectedSockets.forEach((connectedSocket) => {
+        const currentLobbyCode = connectedSocket.handshake.query.lobbyCode?.toString()
+        if (currentLobbyCode === lobbyCode) {
+          const currentRoundType = game.getRoundType(lobbyCode)
+          switch (currentRoundType) {
+            case "instruction":
+              game.setNewRoundData(lobbyCode)
+              game.setNextRoundType(lobbyCode, "quiz")
+              break;
+            case "quiz":
+              game.setNewRoundData(lobbyCode)
+              game.setNextRoundType(lobbyCode, "instruction")
+              break;
+          }
+  
+          emitRound(connectedSocket, game.getRoundEmitQuestion(lobbyCode))
+        }
+      });
+  
+      console.log(`Interval: ${lobbyCode}`);
+    }, 15 * 1000);
+  }
 });
 
 const emitRound = (socket: Socket, roundData: any) => {

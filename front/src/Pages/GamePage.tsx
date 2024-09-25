@@ -1,4 +1,4 @@
-import { Box, Typography, FormControl, InputLabel, Input, Button, Container, CircularProgress, useTheme } from '@mui/material';
+import { Box, Typography, FormControl, Input, Button, Container, CircularProgress, useTheme } from '@mui/material';
 import Grid2 from '@mui/material/Unstable_Grid2/Grid2';
 import React, { useState, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
@@ -76,7 +76,9 @@ const GameComponent: React.FC = () => {
 
   const handleSocketDisconnect = () => {
     if (socket) {
+      console.log(socket.connected)
       socket.disconnect();
+      console.log(socket.connected)
       setSocket(null);
       console.log("Socket disconnected");
     }
@@ -130,7 +132,8 @@ const GameComponent: React.FC = () => {
         }}>
           <Typography variant='h5'>{roundData.instruction}</Typography>
         </Box>
-        <Button variant="contained" onClick={() => handleInstructionAnswer()}>
+        <br/>
+        <Button style={{width: "100%"}} variant="contained" onClick={() => handleInstructionAnswer()}>
           Click on completion
         </Button>
 
@@ -195,6 +198,16 @@ const GameComponent: React.FC = () => {
     </Box>
   );
 
+  const LoadingComponent = () => {
+    return (
+      <Box>
+        <Typography variant='h5'>Wait till the next round of questions</Typography>
+        <CircularProgress />
+
+      </Box>
+    )
+  }
+
   return (
     <Container>
       {socket === null && JoinLobbyComponent}
@@ -216,7 +229,7 @@ const GameComponent: React.FC = () => {
             <InstructionComponent />
           }
           {!isAnswer && !isQuiz && !isInstruction &&
-            <CircularProgress />
+           <LoadingComponent />
           }
         </Box>
       )}

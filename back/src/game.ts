@@ -10,10 +10,13 @@ class Game {
             this.game[lobbyCode] = {
                 lobbyCode: lobbyCode,
                 nextRoundType: "instruction",
-                currentState: quizState,
+                currentState: {...quizState},
                 players: []
             };
+            return true
         }
+
+        return false
     }
 
     addNewPlayersToLobby(lobbyCode: string, username: string) {
@@ -23,7 +26,7 @@ class Game {
     }
 
     removePlayerFromLobby(lobbyCode: string, username: string) {
-        this.game[lobbyCode].players.filter(player => player !== username);
+        this.game[lobbyCode].players = [... this.game[lobbyCode].players.filter(player => player !== username) ]
     }
 
     removeLobbyIfZeroPlayers(lobbyCode: string) {
@@ -50,7 +53,7 @@ class Game {
         if (!(lobbyCode in this.game)) throw new Error("This lobby doesn't exist")
 
         if(this.game[lobbyCode].players.includes(username))
-        if(this.game[lobbyCode].currentState.playersAnswered.includes(username)) throw new Error("This player already answered")
+        if(this.game[lobbyCode].currentState.playersAnswered.includes(username)) throw new Error("Player already answered")
 
         this.game[lobbyCode].currentState.playersAnswered.push(username)
 
@@ -64,12 +67,8 @@ class Game {
                 correctAnswer = position <= half
                 break
             case "quiz":
-                correctAnswer = answer === this.game[lobbyCode].currentState.answer
+                correctAnswer = answer === this.game[lobbyCode].currentState.answerIndex
                 break
-
-        }
-
-        if(correctAnswer){
 
         }
 
@@ -81,22 +80,32 @@ class Game {
 
     getRoundEmitQuestion(lobbyCode: string) {
         const roundType = this.getRoundType(lobbyCode)
+        const questionIndex = this.game[lobbyCode].currentState.questionIndex
         switch (roundType) {
             case "instruction":
-                return instructionQuestions[0]
+                return instructionQuestions[questionIndex]
             case "quiz":
-                return quizQuestions[0]
+                return quizQuestions[questionIndex]
             default:
                 throw new Error("roundType doesn't match")
         }
     }
 
     getRoundState(type: string) {
+        let state;
         switch (type) {
             case "instruction":
-                return instructionState
+                state = { ...instructionState }
+                state.questionIndex = Math.floor(Math.random() * instructionQuestions.length);
+                state.answerIndex = instructionQuestions[state.questionIndex].answerIndex
+                return {... state}
+
             case "quiz":
-                return quizState
+                state = { ...quizState }
+                state.questionIndex = Math.floor(Math.random() * quizQuestions.length);
+                state.answerIndex = quizQuestions[state.questionIndex].answerIndex
+
+                return {... state}
             default:
                 throw new Error("roundType doesn't match")
         }
@@ -105,7 +114,9 @@ class Game {
 
     setNewRoundData(lobbyCode: string) {
         const state = this.getRoundState(this.game[lobbyCode].nextRoundType);
+        console.log(JSON.stringify(state))
         this.game[lobbyCode].currentState = state
+        this.resetPlayersAnswered(lobbyCode)
     }
 
     setNextRoundType(lobbyCode: string, type: string) {

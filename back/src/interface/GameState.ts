@@ -4,7 +4,8 @@ export default interface GameState {
         nextRoundType: string;
         currentState: {
             roundType: string;
-            answer: any;
+            answerIndex: number;
+            questionIndex: number;
             playersAnswered: string[]
         }
         players: string[]
