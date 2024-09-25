@@ -1,8 +1,15 @@
-import { Box, Typography, FormControl, InputLabel, Input, Button, Container, List, ListItem, ListItemText, CircularProgress } from '@mui/material';
+import { Box, Typography, FormControl, InputLabel, Input, Button, Container, CircularProgress, useTheme } from '@mui/material';
+import Grid2 from '@mui/material/Unstable_Grid2/Grid2';
 import React, { useState, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 
+const whiteCode = "#f2f2f2"
+const redCode = "#c0392b"
+const greenCode = "green"
+
 const GameComponent: React.FC = () => {
+  const theme = useTheme();
+
   const [username, setUsername] = useState<string>('');
   const [lobbyCode, setLobbyCode] = useState<string>('');
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -11,13 +18,11 @@ const GameComponent: React.FC = () => {
   const [isQuiz, setIsQuiz] = useState<boolean>(false)
   const [isAnswer, setIsAnswer] = useState<boolean>(false)
   const [isInstruction, setIsInstruction] = useState<boolean>(false)
-  const [isInit, setIsInit] = useState<boolean>(false)
 
   const resetRoundTypeStates = () => {
     setIsAnswer(false)
     setIsQuiz(false)
     setIsInstruction(false)
-    setIsInit(false)
   }
 
   const handleConnectionInit = useCallback(() => {
@@ -37,15 +42,10 @@ const GameComponent: React.FC = () => {
       console.log('Disconnected from server');
     });
 
-    newSocket.on('round', (data: {type: string, question: string}) => {
+    newSocket.on('round', (data: { type: string, question: string }) => {
       console.log(data)
 
       switch (data.type) {
-        case "init":
-          resetRoundTypeStates()
-          setIsInit(true)
-          setRoundData(data)
-          break;
         case "quiz":
           resetRoundTypeStates()
           setIsQuiz(true)
@@ -63,10 +63,6 @@ const GameComponent: React.FC = () => {
           break;
       }
     })
-
-    newSocket.on('message', (message: string) => {
-      console.log(message);
-    });
 
     setSocket(newSocket);
 
@@ -111,14 +107,14 @@ const GameComponent: React.FC = () => {
 
   const AnswerComponent = () => {
     return (
-      <Box>
-        <Typography variant='h6'>Answer</Typography>
-        {roundData.correct &&
-          <Typography variant='h4'>Just escaped drinking, lucky you.</Typography>
-        }
-        {!roundData.correct &&
-          <Typography variant='h4'>You failed! Drink up!</Typography>
-        }
+      <Box sx={{
+        backgroundColor: roundData.correct ? greenCode : theme.palette.primary.dark,
+        color: whiteCode,
+        padding: 2,
+        borderRadius: 1,
+      }}
+      >
+        <Typography variant='h4'>{roundData.correct ? 'Just escaped drinking, lucky you.' : 'You failed! Drink up!'}</Typography>
       </Box>
     )
   }
@@ -126,58 +122,75 @@ const GameComponent: React.FC = () => {
   const InstructionComponent = () => {
     return (
       <Box>
-        <Typography variant='h6'>Instruction</Typography>
-        <Typography variant='h6'>{roundData.instruction}</Typography>
+        <Box sx={{
+          backgroundColor: redCode,
+          color: whiteCode,
+          padding: 2,
+          borderRadius: 1,
+        }}>
+          <Typography variant='h5'>{roundData.instruction}</Typography>
+        </Box>
         <Button variant="contained" onClick={() => handleInstructionAnswer()}>
           Click on completion
         </Button>
-      </Box>
-    )
-  }
-  const InitComponent = () => {
-    return (
-      <Box>
-        <Typography variant='h6'>Welcome</Typography>
-        <Typography variant='h6'>{roundData.question}</Typography>
+
       </Box>
     )
   }
   const QuizComponent = () => {
     return (
       <Box>
-        <Typography variant='h6'>Quiz</Typography>
-        <Typography variant='h6'>{roundData.question}</Typography>
-        <Button variant="contained" onClick={() => handleQuizAnswer(1)}>
-          {roundData.option1}
-        </Button>
-        <Button variant="contained" onClick={() => handleQuizAnswer(2)}>
-          {roundData.option2}
-        </Button>
-        <Button variant="contained" onClick={() => handleQuizAnswer(3)}>
-          {roundData.option3}
-        </Button>
-        <Button variant="contained" onClick={() => handleQuizAnswer(4)}>
-          {roundData.option4}
-        </Button>
+        <Typography variant='h4'>{roundData.question}</Typography>
+        <Grid2 container spacing={2}>
+          <Grid2 xs={6}>
+            <Button style={{ backgroundColor: "red", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleQuizAnswer(1)}>
+              {roundData.option1}
+            </Button>
+          </Grid2>
+          <Grid2 xs={6}>
+            <Button style={{ backgroundColor: "blue", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleQuizAnswer(2)}>
+              {roundData.option2}
+            </Button>
+          </Grid2>
+          <Grid2 xs={6}>
+            <Button style={{ backgroundColor: "green", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleQuizAnswer(3)}>
+              {roundData.option3}
+            </Button>
+          </Grid2>
+          <Grid2 xs={6}>
+            <Button style={{ backgroundColor: "yellow", color: 'black', width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleQuizAnswer(4)}>
+              {roundData.option4}
+            </Button>
+          </Grid2>
+        </Grid2>
       </Box>
     )
   }
 
   const JoinLobbyComponent = (
     <Box>
-      <Typography variant="h6">Game Component</Typography>
+      <Typography variant="h6">Welcome to Drinkers' Game by Shae</Typography>
       <Box>
-        <FormControl>
-          <InputLabel>Username</InputLabel>
-          <Input value={username} onChange={(event) => setUsername(event.target.value)} />
+        <FormControl style={{ margin: "1rem" }}>
+          <Input placeholder={"Username..."} value={username} onChange={(event) => setUsername(event.target.value)} />
         </FormControl>
-        <FormControl>
-          <InputLabel>Lobby Code</InputLabel>
-          <Input value={lobbyCode} onChange={(event) => setLobbyCode(event.target.value)} />
+        <FormControl style={{ margin: "1rem" }}>
+          <Input placeholder={"Lobby Code..."} value={lobbyCode} onChange={(event) => setLobbyCode(event.target.value)} />
         </FormControl>
-        <Button variant="contained" onClick={handleConnectionInit}>
+        <Button style={{ margin: "1rem" }} variant="contained" onClick={handleConnectionInit}>
           Connect
         </Button>
+      </Box>
+      <Box>
+        <Typography variant="h4">How to play</Typography>
+        <Typography variant="h6">1. Insert your username (Must be unique)</Typography>
+        <Typography variant="h6">2. If you're creating the lobby, insert a unique lobby code and click connect.</Typography>
+        <Typography variant="h6">3. If you're joining a lobby, ask the host for the code, it'll be on their screen.</Typography>
+        <Typography variant="h6">4. When you're in, every 5-10 minutes your phone will receive a notification.</Typography>
+        <Typography variant="h6">5. Quickly check your phone, then complete the challenge. Once completed, you'll be told if you won, or lost.</Typography>
+        <Typography variant="h6">6. If you won (Answered the question right, or Completed a challenge first), you'll be told you are safe.</Typography>
+        <Typography variant="h6">7. If you lost, you'll be told to drink. (Note, you're more than welcome to use another challenge if you don't drink. Do a pushup, or do something embarassing)</Typography>
+
       </Box>
     </Box>
   );
@@ -187,13 +200,12 @@ const GameComponent: React.FC = () => {
       {socket === null && JoinLobbyComponent}
       {socket !== null && (
         <Box>
-          <Typography variant="h2">Connected!</Typography>
-          <Typography>Lobby Code: {lobbyCode}</Typography>
-          <Typography>Username: {username}</Typography>
+          <Box style={{ margin: "1rem", display: "grid", gridTemplateColumns: "1fr 1fr 1fr" }}>
+            <Typography>Lobby Code: {lobbyCode}</Typography>
+            <Typography>Username: {username}</Typography>
+            <Button variant="contained" onClick={handleSocketDisconnect}>I quit</Button>
+          </Box>
 
-          <Button variant="contained" onClick={handleSocketDisconnect}>
-            Disconnect
-          </Button>
           {isQuiz &&
             <QuizComponent />
           }
@@ -203,10 +215,7 @@ const GameComponent: React.FC = () => {
           {isInstruction &&
             <InstructionComponent />
           }
-          {isInit &&
-            <InitComponent />
-          }
-          {!isAnswer && !isQuiz && !isInstruction && !isInit &&
+          {!isAnswer && !isQuiz && !isInstruction &&
             <CircularProgress />
           }
         </Box>

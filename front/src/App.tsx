@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { ThemeProvider } from '@emotion/react';
 import { theme } from './Components/Theme';
-import { CssBaseline } from '@mui/material';
+import { Box, CssBaseline } from '@mui/material';
 import GamePage from './Pages/GamePage';
 
 
@@ -10,11 +10,13 @@ const App = () => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Router>
-        <Routes>
-          <Route path="/" element={<GamePage />} />
-        </Routes>
-      </Router>
+      <Box style={{ maxWidth: "500px", margin: "auto", borderLeft: "1px solid red", borderRight: "1px solid red" }}>
+        <Router>
+          <Routes>
+            <Route path="/" element={<GamePage />} />
+          </Routes>
+        </Router>
+      </Box >
     </ThemeProvider>
   );
 }

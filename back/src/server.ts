@@ -39,6 +39,7 @@ io.on('connection', (socket) => {
   setInterval(() => {
     for (const currentLobbyCode of game.getAllLobbyCodes()) {
       const currentRoundType = game.getRoundType(currentLobbyCode)
+      game.resetPlayersAnswered(currentLobbyCode)
 
       switch (currentRoundType) {
         case "instruction":

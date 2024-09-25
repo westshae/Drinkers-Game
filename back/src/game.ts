@@ -112,6 +112,10 @@ class Game {
         this.game[lobbyCode].nextRoundType = type;
     }
 
+    resetPlayersAnswered(lobbyCode: string) {
+        this.game[lobbyCode].currentState.playersAnswered = []
+    }
+
     debugPrintGame() {
         console.log(JSON.stringify(this.game))
     }
