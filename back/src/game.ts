@@ -114,7 +114,6 @@ class Game {
 
     setNewRoundData(lobbyCode: string) {
         const state = this.getRoundState(this.game[lobbyCode].nextRoundType);
-        console.log(JSON.stringify(state))
         this.game[lobbyCode].currentState = state
         this.resetPlayersAnswered(lobbyCode)
     }
