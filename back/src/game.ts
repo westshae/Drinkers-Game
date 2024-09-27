@@ -58,7 +58,6 @@ class Game {
         if(this.game[lobbyCode].currentState.playersAnswered.includes(username)) throw new Error("Player already answered")
 
         this.game[lobbyCode].currentState.playersAnswered.push(username)
-
         let correctAnswer = false;
 
         switch(this.game[lobbyCode].currentState.roundType){
@@ -85,9 +84,9 @@ class Game {
         const questionIndex = this.game[lobbyCode].currentState.questionIndex
         switch (roundType) {
             case "instruction":
-                return { ...instructionQuestions[questionIndex]}
+                return structuredClone(instructionQuestions[questionIndex])
             case "quiz":
-                return { ...quizQuestions[questionIndex]}
+                return structuredClone(quizQuestions[questionIndex])
             default:
                 throw new Error("roundType doesn't match")
         }
@@ -95,20 +94,21 @@ class Game {
 
     getRoundState(type: string) {
         let state;
+
         switch (type) {
             case "instruction":
-                state = { ...instructionState }
+                state = structuredClone(instructionState)
                 state.questionIndex = Math.floor(Math.random() * instructionQuestions.length);
                 state.answerIndex = instructionQuestions[state.questionIndex].answerIndex
 
-                return {... state}
+                return state
 
             case "quiz":
-                state = { ...quizState }
+                state = structuredClone(quizState)
                 state.questionIndex = Math.floor(Math.random() * quizQuestions.length);
                 state.answerIndex = quizQuestions[state.questionIndex].answerIndex
 
-                return {... state}
+                return state
             default:
                 throw new Error("roundType doesn't match")
         }
@@ -116,8 +116,7 @@ class Game {
 
     setNewRoundData(lobbyCode: string) {
         const state = this.getRoundState(this.game[lobbyCode].nextRoundType);
-
-
+        this.game[lobbyCode].currentState = state
     }
 
     setNextRoundType(lobbyCode: string, type: string) {

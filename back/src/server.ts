@@ -31,35 +31,32 @@ io.on('connection', (socket) => {
   socket.on('answer', (message) => {
     emitRound(socket, game.acceptAnswer(message))
   });
-  
+
   if (newLobbyMade) {
     setInterval(() => {
-      let updatedLobbies: string[] = []
+
+      const uniqueLobbyCodes = new Set<string>();
       const connectedSockets = io.sockets.sockets;
+
       connectedSockets.forEach((connectedSocket) => {
-        const currentLobbyCode = connectedSocket.handshake.query.lobbyCode?.toString()
-        if (currentLobbyCode === lobbyCode) {
-          const currentRoundType = game.getRoundType(lobbyCode)
-
-          if (!updatedLobbies.includes(currentLobbyCode)) {
-            switch (currentRoundType) {
-              case "instruction":
-                game.setNewRoundData(lobbyCode)
-                game.setNextRoundType(lobbyCode, "quiz")
-                updatedLobbies.push(currentLobbyCode)
-                break;
-              case "quiz":
-                game.setNewRoundData(lobbyCode)
-                game.setNextRoundType(lobbyCode, "instruction")
-                updatedLobbies.push(currentLobbyCode)
-                break;
-            }
-          }
-
-          emitRound(connectedSocket, game.getRoundEmitQuestion(lobbyCode))
-          return;
+        const currentLobbyCode = connectedSocket.handshake.query.lobbyCode?.toString();
+        if (currentLobbyCode) {
+          uniqueLobbyCodes.add(currentLobbyCode);
         }
       });
+      uniqueLobbyCodes.forEach((currentLobbyCode: string) => {
+        const currentRoundType = game.getRoundType(lobbyCode)
+
+        game.setNewRoundData(currentLobbyCode)
+        game.setNextRoundType(currentLobbyCode, currentRoundType)
+      });
+
+      connectedSockets.forEach((connectedSocket) => {
+        const currentLobbyCode = connectedSocket.handshake.query.lobbyCode?.toString();
+        if(currentLobbyCode){
+          emitRound(connectedSocket, game.getRoundEmitQuestion(currentLobbyCode))
+        }
+      })
 
       console.log(`Interval: ${lobbyCode}`);
 
