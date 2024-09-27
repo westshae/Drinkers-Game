@@ -10,7 +10,7 @@ const App = () => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Box style={{ maxWidth: "500px", margin: "auto", borderLeft: "1px solid red", borderRight: "1px solid red" }}>
+      <Box sx={{ '@media (min-width: 500px)': {maxWidth: "500px", margin: "auto", borderLeft: "1px solid red", borderRight: "1px solid red" }}}>
         <Router>
           <Routes>
             <Route path="/" element={<GamePage />} />
