@@ -50,9 +50,11 @@ class Game {
     acceptAnswer(message: string) {
         const parsed = JSON.parse(message);
         const { lobbyCode, username, answer } = parsed;
+
         if (!(lobbyCode in this.game)) throw new Error("This lobby doesn't exist")
 
-        if(this.game[lobbyCode].players.includes(username))
+        if(!this.game[lobbyCode].players.includes(username)) throw new Error("This player isn't in this lobby?")
+        
         if(this.game[lobbyCode].currentState.playersAnswered.includes(username)) throw new Error("Player already answered")
 
         this.game[lobbyCode].currentState.playersAnswered.push(username)
@@ -83,9 +85,9 @@ class Game {
         const questionIndex = this.game[lobbyCode].currentState.questionIndex
         switch (roundType) {
             case "instruction":
-                return instructionQuestions[questionIndex]
+                return { ...instructionQuestions[questionIndex]}
             case "quiz":
-                return quizQuestions[questionIndex]
+                return { ...quizQuestions[questionIndex]}
             default:
                 throw new Error("roundType doesn't match")
         }
@@ -98,6 +100,7 @@ class Game {
                 state = { ...instructionState }
                 state.questionIndex = Math.floor(Math.random() * instructionQuestions.length);
                 state.answerIndex = instructionQuestions[state.questionIndex].answerIndex
+
                 return {... state}
 
             case "quiz":
@@ -109,28 +112,27 @@ class Game {
             default:
                 throw new Error("roundType doesn't match")
         }
-
     }
 
     setNewRoundData(lobbyCode: string) {
         const state = this.getRoundState(this.game[lobbyCode].nextRoundType);
-        this.game[lobbyCode].currentState = state
-        this.resetPlayersAnswered(lobbyCode)
+
+
     }
 
     setNextRoundType(lobbyCode: string, type: string) {
         this.game[lobbyCode].nextRoundType = type;
     }
 
-    resetPlayersAnswered(lobbyCode: string) {
-        this.game[lobbyCode].currentState.playersAnswered = []
-    }
-
-    debugPrintGame() {
+    debugGame() {
         console.log(JSON.stringify(this.game))
     }
 
-    debugPrintLobby(lobbyCode: string) {
+    debugState(lobbyCode: string) {
+        console.log(JSON.stringify(this.game[lobbyCode].currentState))
+    }
+
+    debugLobby(lobbyCode: string) {
         console.log(JSON.stringify(this.game[lobbyCode]))
     }
 
