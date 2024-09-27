@@ -1,4 +1,4 @@
-import { GameState, StateInterface } from "./interface/GameState";
+import { GameState } from "./interface/GameState";
 import { quizQuestions, quizState } from "./rounds/quiz";
 import { instructionQuestions, instructionState } from "./rounds/instructions";
 
@@ -35,8 +35,13 @@ class Game {
         }
     }
 
+    disconnectSafely(lobbyCode: string, username: string) {
+        this.removePlayerFromLobby(lobbyCode, username)
+        this.removeLobbyIfZeroPlayers(lobbyCode)
+    }
+
     getRoundType(lobbyCode: string) {
-        return this.game[lobbyCode].currentState.roundType;
+        return this.game[lobbyCode].currentState.roundType || null;
     }
 
     getAllLobbyCodes() {

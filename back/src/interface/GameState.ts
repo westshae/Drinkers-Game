@@ -1,20 +1,17 @@
-interface StateInterface {
-    roundType: string;
-    answerIndex?: number;
-    questionIndex: number;
-    playersAnswered: string[]
 
-}
-
-interface LobbyInterface {
-    lobbyCode: string;
-    nextRoundType: string;
-    currentState: StateInterface,
-    players: string[]
-}
 
 interface GameState {
-    [lobbyCode: string]: LobbyInterface
+    [lobbyCode: string]: {
+        lobbyCode: string;
+        nextRoundType: string;
+        currentState: {
+            roundType: string;
+            answerIndex?: number;
+            questionIndex: number;
+            playersAnswered: string[]
+        },
+        players: string[]
+    }
 }
 
-export {StateInterface, LobbyInterface, GameState}
+export { GameState }

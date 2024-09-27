@@ -19,6 +19,17 @@ const GameComponent: React.FC = () => {
   const [isAnswer, setIsAnswer] = useState<boolean>(false)
   const [isInstruction, setIsInstruction] = useState<boolean>(false)
 
+  const runAlertSound = async () => {
+    const audio = new Audio('/button-11.mp3')
+    audio.play()
+    await new Promise(resolve => setTimeout(resolve, 300));
+
+    audio.play()
+    await new Promise(resolve => setTimeout(resolve, 300));
+
+    audio.play()
+  }
+
   const resetRoundTypeStates = () => {
     setIsAnswer(false)
     setIsQuiz(false)
@@ -50,6 +61,7 @@ const GameComponent: React.FC = () => {
           resetRoundTypeStates()
           setIsQuiz(true)
           setRoundData(data)
+          runAlertSound()
           break;
         case "answer":
           resetRoundTypeStates()
@@ -60,6 +72,7 @@ const GameComponent: React.FC = () => {
           resetRoundTypeStates()
           setIsInstruction(true)
           setRoundData(data)
+          runAlertSound()
           break;
       }
     })

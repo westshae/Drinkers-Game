@@ -23,8 +23,7 @@ io.on('connection', (socket) => {
   console.log('New Socket.IO connection');
 
   socket.on('disconnect', () => {
-    game.removePlayerFromLobby(lobbyCode, username)
-    game.removeLobbyIfZeroPlayers(lobbyCode)
+    game.disconnectSafely(lobbyCode, username)
     console.log('Socket.IO connection disconnected');
   });
 
@@ -32,37 +31,42 @@ io.on('connection', (socket) => {
     emitRound(socket, game.acceptAnswer(message))
   });
 
-  if (newLobbyMade) {
-    setInterval(() => {
-
-      const uniqueLobbyCodes = new Set<string>();
-      const connectedSockets = io.sockets.sockets;
-
-      connectedSockets.forEach((connectedSocket) => {
-        const currentLobbyCode = connectedSocket.handshake.query.lobbyCode?.toString();
-        if (currentLobbyCode) {
-          uniqueLobbyCodes.add(currentLobbyCode);
-        }
-      });
-      uniqueLobbyCodes.forEach((currentLobbyCode: string) => {
-        const currentRoundType = game.getRoundType(lobbyCode)
-
-        game.setNewRoundData(currentLobbyCode)
-        game.setNextRoundType(currentLobbyCode, currentRoundType)
-      });
-
-      connectedSockets.forEach((connectedSocket) => {
-        const currentLobbyCode = connectedSocket.handshake.query.lobbyCode?.toString();
-        if(currentLobbyCode){
-          emitRound(connectedSocket, game.getRoundEmitQuestion(currentLobbyCode))
-        }
-      })
-
-      console.log(`Interval: ${lobbyCode}`);
-
-    }, 15 * 1000)
-  }
 });
+
+setInterval(() => {
+
+  const socketsWithUniqueLobbyCodes = new Set<Socket>();
+  const connectedSockets = io.sockets.sockets;
+
+  connectedSockets.forEach((connectedSocket) => {
+    const { lobbyCode = null, username = null } = getParams(connectedSocket) || {}
+    if (lobbyCode && username) {
+      socketsWithUniqueLobbyCodes.add(connectedSocket)
+    } else {
+      connectedSocket.disconnect()
+    }
+  });
+
+  for (const connectedSocket of socketsWithUniqueLobbyCodes) {
+    const { lobbyCode = null, username = null } = getParams(connectedSocket) || {}
+    if (lobbyCode && username) {
+      const roundType = game.getRoundType(lobbyCode)
+      if (!roundType){
+        connectedSocket.disconnect()
+      } else {
+        game.setNewRoundData(lobbyCode)
+        game.setNextRoundType(lobbyCode, roundType)
+      }
+    }
+  }
+
+  connectedSockets.forEach((connectedSocket) => {
+    const currentLobbyCode = connectedSocket.handshake.query.lobbyCode?.toString();
+    if (currentLobbyCode) {
+      emitRound(connectedSocket, game.getRoundEmitQuestion(currentLobbyCode))
+    }
+  })
+}, 8 * 1000)
 
 const emitRound = (socket: Socket, roundData: any) => {
   socket.emit('round', roundData)
