@@ -21,11 +21,13 @@ const GameComponent: React.FC = () => {
 
   const runAlertSound = async () => {
     const audio = new Audio('/button-11.mp3')
-    audio.play()
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise(resolve => setTimeout(resolve, 500));
 
     audio.play()
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    audio.play()
+    await new Promise(resolve => setTimeout(resolve, 500));
 
     audio.play()
   }
