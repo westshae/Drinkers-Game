@@ -1,13 +1,20 @@
-export default interface GameState {
-    [lobbyCode: string]: {
-        lobbyCode: string;
-        nextRoundType: string;
-        currentState: {
-            roundType: string;
-            answerIndex: number;
-            questionIndex: number;
-            playersAnswered: string[]
-        }
-        players: string[]
-    };
+interface StateInterface {
+    roundType: string;
+    answerIndex?: number;
+    questionIndex: number;
+    playersAnswered: string[]
+
 }
+
+interface LobbyInterface {
+    lobbyCode: string;
+    nextRoundType: string;
+    currentState: StateInterface,
+    players: string[]
+}
+
+interface GameState {
+    [lobbyCode: string]: LobbyInterface
+}
+
+export {StateInterface, LobbyInterface, GameState}

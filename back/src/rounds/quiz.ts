@@ -1,4 +1,6 @@
-const quizState = {
+import { StateInterface } from "../interface/GameState"
+
+const quizState:StateInterface = {
     roundType: "quiz",
     playersAnswered: [],
     answerIndex: 0,

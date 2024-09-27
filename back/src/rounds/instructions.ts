@@ -1,4 +1,6 @@
-const instructionState = {
+import { StateInterface } from "../interface/GameState"
+
+const instructionState:StateInterface = {
     roundType: "instruction",
     playersAnswered: [],
     answerIndex: 0,

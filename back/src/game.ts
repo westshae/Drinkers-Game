@@ -1,4 +1,4 @@
-import GameState from "./interface/GameState";
+import { GameState, StateInterface } from "./interface/GameState";
 import { quizQuestions, quizState } from "./rounds/quiz";
 import { instructionQuestions, instructionState } from "./rounds/instructions";
 
@@ -10,7 +10,7 @@ class Game {
             this.game[lobbyCode] = {
                 lobbyCode: lobbyCode,
                 nextRoundType: "instruction",
-                currentState: {...quizState},
+                currentState: structuredClone(quizState),
                 players: []
             };
             return true
@@ -20,13 +20,13 @@ class Game {
     }
 
     addNewPlayersToLobby(lobbyCode: string, username: string) {
-        if(!this.game[lobbyCode].players.includes(username)) {
+        if (!this.game[lobbyCode].players.includes(username)) {
             this.game[lobbyCode].players.push(username)
         }
     }
 
     removePlayerFromLobby(lobbyCode: string, username: string) {
-        this.game[lobbyCode].players = [... this.game[lobbyCode].players.filter(player => player !== username) ]
+        this.game[lobbyCode].players = [... this.game[lobbyCode].players.filter((player: string) => player !== username)]
     }
 
     removeLobbyIfZeroPlayers(lobbyCode: string) {
@@ -53,17 +53,17 @@ class Game {
 
         if (!(lobbyCode in this.game)) throw new Error("This lobby doesn't exist")
 
-        if(!this.game[lobbyCode].players.includes(username)) throw new Error("This player isn't in this lobby?")
-        
-        if(this.game[lobbyCode].currentState.playersAnswered.includes(username)) throw new Error("Player already answered")
+        if (!this.game[lobbyCode].players.includes(username)) throw new Error("This player isn't in this lobby?")
+
+        if (this.game[lobbyCode].currentState.playersAnswered.includes(username)) throw new Error("Player already answered")
 
         this.game[lobbyCode].currentState.playersAnswered.push(username)
         let correctAnswer = false;
 
-        switch(this.game[lobbyCode].currentState.roundType){
+        switch (this.game[lobbyCode].currentState.roundType) {
             case "instruction":
                 const position = this.game[lobbyCode].currentState.playersAnswered.length
-                const half =  Math.ceil(this.game[lobbyCode].players.length / 2);
+                const half = Math.ceil(this.game[lobbyCode].players.length / 2);
 
                 correctAnswer = position <= half
                 break
@@ -83,32 +83,35 @@ class Game {
         const roundType = this.getRoundType(lobbyCode)
         const questionIndex = this.game[lobbyCode].currentState.questionIndex
         switch (roundType) {
-            case "instruction":
-                return structuredClone(instructionQuestions[questionIndex])
-            case "quiz":
-                return structuredClone(quizQuestions[questionIndex])
+            case "instruction": {
+                const { answerIndex, ...remainder } = instructionQuestions[questionIndex];
+                return structuredClone(remainder)
+            }
+            case "quiz": {
+                const { answerIndex, ...remainder } = quizQuestions[questionIndex]
+                return structuredClone(remainder)
+            }
             default:
                 throw new Error("roundType doesn't match")
         }
     }
 
     getRoundState(type: string) {
-        let state;
-
         switch (type) {
-            case "instruction":
-                state = structuredClone(instructionState)
+            case "instruction": {
+                let state = structuredClone(instructionState)
                 state.questionIndex = Math.floor(Math.random() * instructionQuestions.length);
                 state.answerIndex = instructionQuestions[state.questionIndex].answerIndex
 
                 return state
-
-            case "quiz":
-                state = structuredClone(quizState)
+            }
+            case "quiz": {
+                let state = structuredClone(quizState)
                 state.questionIndex = Math.floor(Math.random() * quizQuestions.length);
                 state.answerIndex = quizQuestions[state.questionIndex].answerIndex
 
                 return state
+            }
             default:
                 throw new Error("roundType doesn't match")
         }
