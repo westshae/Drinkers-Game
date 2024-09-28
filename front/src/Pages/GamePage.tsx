@@ -31,7 +31,9 @@ const GameComponent: React.FC = () => {
   }
 
   const handleConnectionInit = useCallback(() => {
-    const newSocket = io('http://localhost:5000', {
+    const backend_url = process.env.REACT_APP_BACKEND_URL;
+    if(!backend_url) return
+    const newSocket = io(backend_url, {
       transports: ['websocket', 'polling'],
       query: {
         lobbyCode: lobbyCode,
