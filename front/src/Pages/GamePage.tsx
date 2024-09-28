@@ -164,12 +164,12 @@ const GameComponent: React.FC = () => {
         <Typography variant='h4'>{question}</Typography>
         <Grid2 container spacing={2}>
           <Grid2 xs={6}>
-            <Button style={{ backgroundColor: "green", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleAnswer(1)}>
+            <Button style={{ backgroundColor: "green", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleAnswer(0)}>
               I did it!
             </Button>
           </Grid2>
           <Grid2 xs={6}>
-            <Button style={{ backgroundColor: "red", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleAnswer(2)}>
+            <Button style={{ backgroundColor: "red", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleAnswer(1)}>
               I didn't do it...
             </Button>
           </Grid2>
@@ -185,12 +185,12 @@ const GameComponent: React.FC = () => {
         <Typography variant='h4'>{question}</Typography>
         <Grid2 container spacing={2}>
           <Grid2 xs={6}>
-            <Button style={{ backgroundColor: "green", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleAnswer(1)}>
+            <Button style={{ backgroundColor: "green", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleAnswer(0)}>
               I am.
             </Button>
           </Grid2>
           <Grid2 xs={6}>
-            <Button style={{ backgroundColor: "red", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleAnswer(2)}>
+            <Button style={{ backgroundColor: "red", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleAnswer(1)}>
               I am not.
             </Button>
           </Grid2>
@@ -206,12 +206,12 @@ const GameComponent: React.FC = () => {
         <Typography variant='h4'>{question}</Typography>
         <Grid2 container spacing={2}>
           <Grid2 xs={6}>
-            <Button style={{ backgroundColor: "green", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleAnswer(1)}>
+            <Button style={{ backgroundColor: "green", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleAnswer(0)}>
               Yes I've have...
             </Button>
           </Grid2>
           <Grid2 xs={6}>
-            <Button style={{ backgroundColor: "red", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleAnswer(2)}>
+            <Button style={{ backgroundColor: "red", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleAnswer(1)}>
               Nope, I haven't...
             </Button>
           </Grid2>
