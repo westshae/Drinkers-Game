@@ -6,16 +6,18 @@ const whoisState = {
     questionIndex: 0
 }
 
+//answerIndex 0 === drink up
+
 const whoisQuestions = [
     {
         type: "whois",
         question: "Are you holding your drink?",
-        answerIndex: 1
+        answerIndex: 0
     },
     {
         type: "whois",
-        question: "Is your left hand empty?",
-        answerIndex: 1
+        question: "Are you drinking something with more than 10% alcohol?",
+        answerIndex: 0
     },
 ]
 

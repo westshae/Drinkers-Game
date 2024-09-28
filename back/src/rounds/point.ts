@@ -5,6 +5,8 @@ const pointState = {
     questionIndex: 0
 }
 
+//Always returns don't drink as it's voted in person
+
 const pointQuestions = [
     {
         type: "point",

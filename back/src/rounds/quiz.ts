@@ -6,6 +6,8 @@ const quizState = {
     questionIndex: 0
 }
 
+//state.answerIndex !== question.answerIndex == drink
+
 const quizQuestions = [
     {
         type: "quiz",

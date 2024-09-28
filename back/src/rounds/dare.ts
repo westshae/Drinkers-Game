@@ -6,6 +6,8 @@ const dareState = {
     questionIndex: 0
 }
 
+//answerIndex 0 == dont drink
+
 const dareQuestions = [
     {
         type: "dare",

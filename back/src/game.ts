@@ -87,10 +87,10 @@ class Game {
                 answerResponse.message = "Only the people that were pointed at drink.";
                 break;
             case "truth":
-                if(answer === 0) {
+                if(answer !== this.game[lobbyCode].currentState.answerIndex) {
                     answerResponse.correctAnswer = false;
                     answerResponse.message = "I'm shocked, drink up"
-                } else if (answer === 1) {
+                } else{
                     answerResponse.correctAnswer = true;
                     answerResponse.message = "I guess you're not so terrible, you're safe this round."
                 }
@@ -99,7 +99,7 @@ class Game {
                 if(answer === 0) {
                     answerResponse.correctAnswer = false
                     answerResponse.message = "Unlucky, drink up!"
-                } else if (answer === 1) {
+                } else {
                     answerResponse.correctAnswer = true
                     answerResponse.message = "You've escaped the tasty alcoholic beverage."
                 }

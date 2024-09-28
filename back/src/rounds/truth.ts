@@ -6,6 +6,8 @@ const truthState = {
     questionIndex: 0
 }
 
+//answerIndex !== answerIndex == drink
+
 const truthQuestions = [
     {
         type: "truth",
@@ -15,7 +17,7 @@ const truthQuestions = [
     {
         type: "truth",
         question: "Have you forgotten anyone's name at the party?",
-        answerIndex: 0
+        answerIndex: 1
     },
 ]
 

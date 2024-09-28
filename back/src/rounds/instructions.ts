@@ -5,6 +5,8 @@ const instructionState = {
     questionIndex: 0
 }
 
+//Drink if you are in the bottom 50% of the podium
+
 const instructionQuestions = [
     {
         type: "instruction",
