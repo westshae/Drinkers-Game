@@ -55,7 +55,9 @@ const GameComponent: React.FC = () => {
 
       setRoundType(type)
       setRoundData(data)
-      runAlertSound()
+      if(type !== "answer"){
+        runAlertSound()
+      }
     })
 
     setSocket(newSocket);
