@@ -275,7 +275,11 @@ const GameComponent: React.FC = () => {
   const LoadingComponent = () => {
     return (
       <Box>
-        <Typography variant='h5'>Wait till the next round of questions</Typography>
+        <Typography variant='h5'>Wait till the next round of questions.</Typography>
+        <Typography variant='h5'>
+          If you're trying to connect before the 26th of October, it is running on a very cheap hosting solution, so if it has been inactive
+          or more than 10 minutes or so, it'll take much longer to load up initially (1-2 minutes), then it'll work.
+        </Typography>
         <CircularProgress />
 
       </Box>
