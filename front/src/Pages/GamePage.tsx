@@ -152,7 +152,7 @@ const GameComponent: React.FC = () => {
         <Grid2 container spacing={2}>
           <Grid2 xs={6}>
             <Button style={{ backgroundColor: "green", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleAnswer(0)}>
-              Yes I've have...
+              Yes I have...
             </Button>
           </Grid2>
           <Grid2 xs={6}>
