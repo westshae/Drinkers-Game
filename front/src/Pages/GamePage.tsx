@@ -129,7 +129,7 @@ const GameComponent: React.FC = () => {
     }
   };
 
-  const handleQuizAnswer = (option: number) => {
+  const handleOptionBasedAnswer = (option: number) => {
     if (socket === null) return
     const answer = {
       username: username,
@@ -137,9 +137,10 @@ const GameComponent: React.FC = () => {
       answer: option
     }
     socket.emit("answer", JSON.stringify(answer))
-    setIsQuiz(false)
+    resetRoundTypeStates()
     setRoundData({})
   }
+
   const handleInstructionAnswer = () => {
     if (socket === null) return
     const answer = {
@@ -162,40 +163,6 @@ const GameComponent: React.FC = () => {
     setIsPoint(false)
     setRoundData({})
   }
-  const handleTruthAnswer = (option: number) => {
-    if (socket === null) return
-    const answer = {
-      username: username,
-      lobbyCode: lobbyCode,
-      answer: option
-    }
-    socket.emit("answer", JSON.stringify(answer))
-    setIsPoint(false)
-    setRoundData({})
-  }
-  const handleWhoisAnswer = (option: number) => {
-    if (socket === null) return
-    const answer = {
-      username: username,
-      lobbyCode: lobbyCode,
-      answer: option
-    }
-    socket.emit("answer", JSON.stringify(answer))
-    setIsPoint(false)
-    setRoundData({})
-  }
-  const handleDareAnswer = (option: number) => {
-    if (socket === null) return
-    const answer = {
-      username: username,
-      lobbyCode: lobbyCode,
-      answer: option
-    }
-    socket.emit("answer", JSON.stringify(answer))
-    setIsDare(false)
-    setRoundData({})
-  }
-
 
   const AnswerComponent = () => {
     const { correctAnswer, message } = roundData;
@@ -220,12 +187,12 @@ const GameComponent: React.FC = () => {
         <Typography variant='h4'>{question}</Typography>
         <Grid2 container spacing={2}>
           <Grid2 xs={6}>
-            <Button style={{ backgroundColor: "green", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleWhoisAnswer(1)}>
+            <Button style={{ backgroundColor: "green", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleOptionBasedAnswer(1)}>
               I did it!
             </Button>
           </Grid2>
           <Grid2 xs={6}>
-            <Button style={{ backgroundColor: "red", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleWhoisAnswer(2)}>
+            <Button style={{ backgroundColor: "red", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleOptionBasedAnswer(2)}>
               I didn't do it...
             </Button>
           </Grid2>
@@ -241,12 +208,12 @@ const GameComponent: React.FC = () => {
         <Typography variant='h4'>{question}</Typography>
         <Grid2 container spacing={2}>
           <Grid2 xs={6}>
-            <Button style={{ backgroundColor: "green", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleWhoisAnswer(1)}>
+            <Button style={{ backgroundColor: "green", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleOptionBasedAnswer(1)}>
               I am.
             </Button>
           </Grid2>
           <Grid2 xs={6}>
-            <Button style={{ backgroundColor: "red", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleWhoisAnswer(2)}>
+            <Button style={{ backgroundColor: "red", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleOptionBasedAnswer(2)}>
               I am not.
             </Button>
           </Grid2>
@@ -262,12 +229,12 @@ const GameComponent: React.FC = () => {
         <Typography variant='h4'>{question}</Typography>
         <Grid2 container spacing={2}>
           <Grid2 xs={6}>
-            <Button style={{ backgroundColor: "green", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleTruthAnswer(1)}>
+            <Button style={{ backgroundColor: "green", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleOptionBasedAnswer(1)}>
               Yes I've have...
             </Button>
           </Grid2>
           <Grid2 xs={6}>
-            <Button style={{ backgroundColor: "red", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleTruthAnswer(2)}>
+            <Button style={{ backgroundColor: "red", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleOptionBasedAnswer(2)}>
               Nope, I haven't...
             </Button>
           </Grid2>
@@ -327,22 +294,22 @@ const GameComponent: React.FC = () => {
         <Typography variant='h4'>{question}</Typography>
         <Grid2 container spacing={2}>
           <Grid2 xs={6}>
-            <Button style={{ backgroundColor: "red", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleQuizAnswer(1)}>
+            <Button style={{ backgroundColor: "red", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleOptionBasedAnswer(1)}>
               {option1}
             </Button>
           </Grid2>
           <Grid2 xs={6}>
-            <Button style={{ backgroundColor: "blue", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleQuizAnswer(2)}>
+            <Button style={{ backgroundColor: "blue", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleOptionBasedAnswer(2)}>
               {option2}
             </Button>
           </Grid2>
           <Grid2 xs={6}>
-            <Button style={{ backgroundColor: "green", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleQuizAnswer(3)}>
+            <Button style={{ backgroundColor: "green", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleOptionBasedAnswer(3)}>
               {option3}
             </Button>
           </Grid2>
           <Grid2 xs={6}>
-            <Button style={{ backgroundColor: "yellow", color: 'black', width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleQuizAnswer(4)}>
+            <Button style={{ backgroundColor: "yellow", color: 'black', width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleOptionBasedAnswer(4)}>
               {option4}
             </Button>
           </Grid2>
