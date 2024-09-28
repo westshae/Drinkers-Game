@@ -1,6 +1,7 @@
 import { GameState } from "./interface/GameState";
 import { quizQuestions, quizState } from "./rounds/quiz";
 import { instructionQuestions, instructionState } from "./rounds/instructions";
+import { pointQuestions, pointState } from "./rounds/point";
 
 class Game {
     private game: GameState = {};
@@ -63,25 +64,31 @@ class Game {
         if (this.game[lobbyCode].currentState.playersAnswered.includes(username)) throw new Error("Player already answered")
 
         this.game[lobbyCode].currentState.playersAnswered.push(username)
-        let correctAnswer = false;
+        let answerResponse = {
+            type: "answer",
+            correctAnswer: false,
+            message: ""
+        }
 
         switch (this.game[lobbyCode].currentState.roundType) {
             case "instruction":
                 const position = this.game[lobbyCode].currentState.playersAnswered.length
                 const half = Math.ceil(this.game[lobbyCode].players.length / 2);
 
-                correctAnswer = position <= half
+                answerResponse.correctAnswer = position <= half
+                answerResponse.message = answerResponse.correctAnswer ? "No need to drink, you were in the first half that completed.":"A bit slow this time, drink up!";
                 break
             case "quiz":
-                correctAnswer = answer === this.game[lobbyCode].currentState.answerIndex
+                answerResponse.correctAnswer = answer === this.game[lobbyCode].currentState.answerIndex
+                answerResponse.message = answerResponse.correctAnswer ? "Ayy you got it right! No need to drink.":"You should've gotten the right answer, drink up!";
                 break
+            case "point":
+                answerResponse.correctAnswer = true;
+                answerResponse.message = "Only the people that were pointed at drink.";
 
         }
 
-        return {
-            type: "answer",
-            correct: correctAnswer
-        }
+        return answerResponse
     }
 
     getRoundEmitQuestion(lobbyCode: string) {
@@ -94,6 +101,10 @@ class Game {
             }
             case "quiz": {
                 const { answerIndex, ...remainder } = quizQuestions[questionIndex]
+                return structuredClone(remainder)
+            }
+            case "point": {
+                const { answerIndex, ...remainder } = pointQuestions[questionIndex]
                 return structuredClone(remainder)
             }
             default:
@@ -117,6 +128,13 @@ class Game {
 
                 return state
             }
+            case "point": {
+                let state = structuredClone(pointState)
+                state.questionIndex = Math.floor(Math.random() * quizQuestions.length);
+                state.answerIndex = pointQuestions[state.questionIndex].answerIndex
+
+                return state
+            }
             default:
                 throw new Error("roundType doesn't match")
         }
@@ -127,8 +145,9 @@ class Game {
         this.game[lobbyCode].currentState = state
     }
 
-    setNextRoundType(lobbyCode: string, type: string) {
-        this.game[lobbyCode].nextRoundType = type;
+    setRandomNextRoundType(lobbyCode: string) {
+        const options = ["point", "quiz", "instructions"]
+        this.game[lobbyCode].nextRoundType = options[Math.floor(Math.random() * options.length)];
     }
 
     debugGame() {

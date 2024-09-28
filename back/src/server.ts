@@ -55,7 +55,7 @@ setInterval(() => {
         connectedSocket.disconnect()
       } else {
         game.setNewRoundData(lobbyCode)
-        game.setNextRoundType(lobbyCode, roundType)
+        game.setRandomNextRoundType(lobbyCode)
       }
     }
   }

@@ -18,6 +18,7 @@ const GameComponent: React.FC = () => {
   const [isQuiz, setIsQuiz] = useState<boolean>(false)
   const [isAnswer, setIsAnswer] = useState<boolean>(false)
   const [isInstruction, setIsInstruction] = useState<boolean>(false)
+  const [isPoint, setIsPoint] = useState<boolean>(false)
 
   const runAlertSound = async () => {
     const audio = new Audio('/button-11.mp3')
@@ -36,6 +37,7 @@ const GameComponent: React.FC = () => {
     setIsAnswer(false)
     setIsQuiz(false)
     setIsInstruction(false)
+    setIsPoint(false)
   }
 
   const handleConnectionInit = useCallback(() => {
@@ -55,10 +57,11 @@ const GameComponent: React.FC = () => {
       console.log('Disconnected from server');
     });
 
-    newSocket.on('round', (data: { type: string, question: string }) => {
+    newSocket.on('round', (data: any) => {
+      const { type } = data;
       console.log(data)
 
-      switch (data.type) {
+      switch (type) {
         case "quiz":
           resetRoundTypeStates()
           setIsQuiz(true)
@@ -73,6 +76,12 @@ const GameComponent: React.FC = () => {
         case "instruction":
           resetRoundTypeStates()
           setIsInstruction(true)
+          setRoundData(data)
+          runAlertSound()
+          break;
+        case "point":
+          resetRoundTypeStates()
+          setIsPoint(true)
           setRoundData(data)
           runAlertSound()
           break;
@@ -91,9 +100,7 @@ const GameComponent: React.FC = () => {
 
   const handleSocketDisconnect = () => {
     if (socket) {
-      console.log(socket.connected)
       socket.disconnect();
-      console.log(socket.connected)
       setSocket(null);
       console.log("Socket disconnected");
     }
@@ -121,22 +128,36 @@ const GameComponent: React.FC = () => {
     setIsInstruction(false)
     setRoundData({})
   }
-
+  const handlePointAnswer = () => {
+    if (socket === null) return
+    const answer = {
+      username: username,
+      lobbyCode: lobbyCode,
+      answer: 0
+    }
+    socket.emit("answer", JSON.stringify(answer))
+    setIsPoint(false)
+    setRoundData({})
+  }
   const AnswerComponent = () => {
+    const { correctAnswer, message } = roundData;
+
     return (
       <Box sx={{
-        backgroundColor: roundData.correct ? greenCode : theme.palette.primary.dark,
+        backgroundColor: correctAnswer ? greenCode : theme.palette.primary.dark,
         color: whiteCode,
         padding: 2,
         borderRadius: 1,
       }}
       >
-        <Typography variant='h4'>{roundData.correct ? 'Just escaped drinking, lucky you.' : 'You failed! Drink up!'}</Typography>
+        <Typography variant='h4'>{message}</Typography>
       </Box>
     )
   }
 
-  const InstructionComponent = () => {
+  const PointComponent = () => {
+    const { instruction } = roundData;
+
     return (
       <Box>
         <Box sx={{
@@ -145,7 +166,29 @@ const GameComponent: React.FC = () => {
           padding: 2,
           borderRadius: 1,
         }}>
-          <Typography variant='h5'>{roundData.instruction}</Typography>
+          <Typography variant='h5'>{instruction}</Typography>
+        </Box>
+        <br/>
+        <Button style={{width: "100%"}} variant="contained" onClick={() => handlePointAnswer()}>
+          Click once everyone has pointed.
+        </Button>
+
+      </Box>
+    )
+  }
+
+  const InstructionComponent = () => {
+    const { instruction } = roundData;
+
+    return (
+      <Box>
+        <Box sx={{
+          backgroundColor: redCode,
+          color: whiteCode,
+          padding: 2,
+          borderRadius: 1,
+        }}>
+          <Typography variant='h5'>{instruction}</Typography>
         </Box>
         <br/>
         <Button style={{width: "100%"}} variant="contained" onClick={() => handleInstructionAnswer()}>
@@ -156,28 +199,30 @@ const GameComponent: React.FC = () => {
     )
   }
   const QuizComponent = () => {
+    const { question, option1, option2, option3, option4 } = roundData;
+
     return (
       <Box>
-        <Typography variant='h4'>{roundData.question}</Typography>
+        <Typography variant='h4'>{question}</Typography>
         <Grid2 container spacing={2}>
           <Grid2 xs={6}>
             <Button style={{ backgroundColor: "red", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleQuizAnswer(1)}>
-              {roundData.option1}
+              {option1}
             </Button>
           </Grid2>
           <Grid2 xs={6}>
             <Button style={{ backgroundColor: "blue", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleQuizAnswer(2)}>
-              {roundData.option2}
+              {option2}
             </Button>
           </Grid2>
           <Grid2 xs={6}>
             <Button style={{ backgroundColor: "green", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleQuizAnswer(3)}>
-              {roundData.option3}
+              {option3}
             </Button>
           </Grid2>
           <Grid2 xs={6}>
             <Button style={{ backgroundColor: "yellow", color: 'black', width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleQuizAnswer(4)}>
-              {roundData.option4}
+              {option4}
             </Button>
           </Grid2>
         </Grid2>
@@ -243,7 +288,10 @@ const GameComponent: React.FC = () => {
           {isInstruction &&
             <InstructionComponent />
           }
-          {!isAnswer && !isQuiz && !isInstruction &&
+          {isPoint && 
+            <PointComponent />
+          }
+          {!isAnswer && !isQuiz && !isInstruction && !isPoint &&
            <LoadingComponent />
           }
         </Box>
