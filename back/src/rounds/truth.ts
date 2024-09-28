@@ -10,7 +10,7 @@ const truthQuestions = [
     {
         type: "truth",
         question: "Have you ever pissed on the side of the road?",
-        answerIndex: 0
+        answerIndex: 1
     },
     {
         type: "truth",

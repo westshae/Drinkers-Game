@@ -3,6 +3,7 @@ import { quizQuestions, quizState } from "./rounds/quiz";
 import { instructionQuestions, instructionState } from "./rounds/instructions";
 import { pointQuestions, pointState } from "./rounds/point";
 import { truthQuestions, truthState } from "./rounds/truth";
+import { whoisQuestions, whoisState } from "./rounds/whois";
 
 class Game {
     private game: GameState = {};
@@ -83,6 +84,7 @@ class Game {
             case "point":
                 answerResponse.correctAnswer = true;
                 answerResponse.message = "Only the people that were pointed at drink.";
+                break;
             case "truth":
                 if(answer === 0) {
                     answerResponse.correctAnswer = false;
@@ -91,6 +93,17 @@ class Game {
                     answerResponse.correctAnswer = true;
                     answerResponse.message = "I guess you're not so terrible, you're safe this round."
                 }
+                break;
+            case "whois": 
+                if(answer === 0) {
+                    answerResponse.correctAnswer = false
+                    answerResponse.message = "Unlucky, drink up!"
+                } else if (answer === 1) {
+                    answerResponse.correctAnswer = true
+                    answerResponse.message = "You've escaped the tasty alcoholic beverage."
+                }
+                break;
+            
         }
 
         return answerResponse
@@ -114,6 +127,10 @@ class Game {
             }
             case "truth": {
                 const { answerIndex, ...remainder } = truthQuestions[questionIndex];
+                return structuredClone(remainder)
+            }
+            case "whois": {
+                const { answerIndex, ...remainder } = whoisQuestions[questionIndex];
                 return structuredClone(remainder)
             }
             default:
@@ -151,6 +168,13 @@ class Game {
 
                 return state
             }
+            case "whois": {
+                let state = structuredClone(whoisState)
+                state.questionIndex = Math.floor(Math.random() * whoisQuestions.length);
+                state.answerIndex = whoisQuestions[state.questionIndex].answerIndex
+
+                return state
+            }
             default:
                 throw new Error("roundType doesn't match")
         }
@@ -162,7 +186,7 @@ class Game {
     }
 
     setRandomNextRoundType(lobbyCode: string) {
-        const options = ["point", "quiz", "instruction", "truth"]
+        const options = ["point", "quiz", "instruction", "truth", "whois"]
         this.game[lobbyCode].nextRoundType = options[Math.floor(Math.random() * options.length)];
     }
 
