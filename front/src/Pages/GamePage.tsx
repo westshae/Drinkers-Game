@@ -21,6 +21,7 @@ const GameComponent: React.FC = () => {
   const [isPoint, setIsPoint] = useState<boolean>(false)
   const [isTruth, setIsTruth] = useState<boolean>(false)
   const [isWhois, setIsWhois] = useState<boolean>(false)
+  const [isDare, setIsDare] = useState<boolean>(false)
 
   const runAlertSound = async () => {
     const audio = new Audio('/button-11.mp3')
@@ -42,6 +43,7 @@ const GameComponent: React.FC = () => {
     setIsPoint(false)
     setIsTruth(false)
     setIsWhois(false)
+    setIsDare(false)
   }
 
   const handleConnectionInit = useCallback(() => {
@@ -101,6 +103,11 @@ const GameComponent: React.FC = () => {
           setRoundData(data)
           runAlertSound()
           break;
+        case "dare":
+          resetRoundTypeStates()
+          setIsDare(true)
+          setRoundData(data)
+          runAlertSound()
       }
     })
 
@@ -177,6 +184,18 @@ const GameComponent: React.FC = () => {
     setIsPoint(false)
     setRoundData({})
   }
+  const handleDareAnswer = (option: number) => {
+    if (socket === null) return
+    const answer = {
+      username: username,
+      lobbyCode: lobbyCode,
+      answer: option
+    }
+    socket.emit("answer", JSON.stringify(answer))
+    setIsDare(false)
+    setRoundData({})
+  }
+
 
   const AnswerComponent = () => {
     const { correctAnswer, message } = roundData;
@@ -193,6 +212,27 @@ const GameComponent: React.FC = () => {
       </Box>
     )
   }
+  const DareComponent = () => {
+    const { question } = roundData;
+
+    return (
+      <Box>
+        <Typography variant='h4'>{question}</Typography>
+        <Grid2 container spacing={2}>
+          <Grid2 xs={6}>
+            <Button style={{ backgroundColor: "green", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleWhoisAnswer(1)}>
+              I did it!
+            </Button>
+          </Grid2>
+          <Grid2 xs={6}>
+            <Button style={{ backgroundColor: "red", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleWhoisAnswer(2)}>
+              I didn't do it...
+            </Button>
+          </Grid2>
+        </Grid2>
+      </Box>
+    )
+  }
   const WhoisComponent = () => {
     const { question } = roundData;
 
@@ -201,12 +241,12 @@ const GameComponent: React.FC = () => {
         <Typography variant='h4'>{question}</Typography>
         <Grid2 container spacing={2}>
           <Grid2 xs={6}>
-            <Button style={{ backgroundColor: "green", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleTruthAnswer(1)}>
+            <Button style={{ backgroundColor: "green", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleWhoisAnswer(1)}>
               I am.
             </Button>
           </Grid2>
           <Grid2 xs={6}>
-            <Button style={{ backgroundColor: "red", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleTruthAnswer(2)}>
+            <Button style={{ backgroundColor: "red", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleWhoisAnswer(2)}>
               I am not.
             </Button>
           </Grid2>
@@ -378,7 +418,10 @@ const GameComponent: React.FC = () => {
           {isWhois &&
             <WhoisComponent />
           }
-          {!isAnswer && !isQuiz && !isInstruction && !isPoint && !isTruth && !isWhois &&
+          {isDare && 
+            <DareComponent />
+          }
+          {!isAnswer && !isQuiz && !isInstruction && !isPoint && !isTruth && !isWhois && !isDare && 
            <LoadingComponent />
           }
         </Box>

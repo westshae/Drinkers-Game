@@ -4,6 +4,7 @@ import { instructionQuestions, instructionState } from "./rounds/instructions";
 import { pointQuestions, pointState } from "./rounds/point";
 import { truthQuestions, truthState } from "./rounds/truth";
 import { whoisQuestions, whoisState } from "./rounds/whois";
+import { dareQuestions, dareState } from "./rounds/dare";
 
 class Game {
     private game: GameState = {};
@@ -103,6 +104,15 @@ class Game {
                     answerResponse.message = "You've escaped the tasty alcoholic beverage."
                 }
                 break;
+            case "dare":
+                if(answer === 0){
+                    answerResponse.correctAnswer = true
+                    answerResponse.message = "Good job, no drink for you."
+                } else if (answer === 1) {
+                    answerResponse.correctAnswer = false
+                    answerResponse.message = "Boringgggg, drink up."
+                }
+                break;
             
         }
 
@@ -131,6 +141,10 @@ class Game {
             }
             case "whois": {
                 const { answerIndex, ...remainder } = whoisQuestions[questionIndex];
+                return structuredClone(remainder)
+            }
+            case "dare": {
+                const { answerIndex, ...remainder } = dareQuestions[questionIndex];
                 return structuredClone(remainder)
             }
             default:
@@ -175,6 +189,13 @@ class Game {
 
                 return state
             }
+            case "dare": {
+                let state = structuredClone(dareState)
+                state.questionIndex = Math.floor(Math.random() * dareQuestions.length);
+                state.answerIndex = dareQuestions[state.questionIndex].answerIndex
+
+                return state
+            }
             default:
                 throw new Error("roundType doesn't match")
         }
@@ -186,7 +207,7 @@ class Game {
     }
 
     setRandomNextRoundType(lobbyCode: string) {
-        const options = ["point", "quiz", "instruction", "truth", "whois"]
+        const options = ["point", "quiz", "instruction", "truth", "whois", "dare"]
         this.game[lobbyCode].nextRoundType = options[Math.floor(Math.random() * options.length)];
     }
 
