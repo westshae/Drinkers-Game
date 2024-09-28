@@ -15,13 +15,7 @@ const GameComponent: React.FC = () => {
   const [socket, setSocket] = useState<Socket | null>(null);
 
   const [roundData, setRoundData] = useState<any>({})
-  const [isQuiz, setIsQuiz] = useState<boolean>(false)
-  const [isAnswer, setIsAnswer] = useState<boolean>(false)
-  const [isInstruction, setIsInstruction] = useState<boolean>(false)
-  const [isPoint, setIsPoint] = useState<boolean>(false)
-  const [isTruth, setIsTruth] = useState<boolean>(false)
-  const [isWhois, setIsWhois] = useState<boolean>(false)
-  const [isDare, setIsDare] = useState<boolean>(false)
+  const [roundType, setRoundType] = useState<string | null>(null)
 
   const runAlertSound = async () => {
     const audio = new Audio('/button-11.mp3')
@@ -34,16 +28,6 @@ const GameComponent: React.FC = () => {
     await new Promise(resolve => setTimeout(resolve, 500));
 
     audio.play()
-  }
-
-  const resetRoundTypeStates = () => {
-    setIsAnswer(false)
-    setIsQuiz(false)
-    setIsInstruction(false)
-    setIsPoint(false)
-    setIsTruth(false)
-    setIsWhois(false)
-    setIsDare(false)
   }
 
   const handleConnectionInit = useCallback(() => {
@@ -67,48 +51,9 @@ const GameComponent: React.FC = () => {
       const { type } = data;
       console.log(data)
 
-      switch (type) {
-        case "quiz":
-          resetRoundTypeStates()
-          setIsQuiz(true)
-          setRoundData(data)
-          runAlertSound()
-          break;
-        case "answer":
-          resetRoundTypeStates()
-          setIsAnswer(true)
-          setRoundData(data)
-          break;
-        case "instruction":
-          resetRoundTypeStates()
-          setIsInstruction(true)
-          setRoundData(data)
-          runAlertSound()
-          break;
-        case "point":
-          resetRoundTypeStates()
-          setIsPoint(true)
-          setRoundData(data)
-          runAlertSound()
-          break;
-        case "truth": 
-          resetRoundTypeStates()
-          setIsTruth(true)
-          setRoundData(data)
-          runAlertSound()
-          break;
-        case "whois": 
-          resetRoundTypeStates()
-          setIsWhois(true)
-          setRoundData(data)
-          runAlertSound()
-          break;
-        case "dare":
-          resetRoundTypeStates()
-          setIsDare(true)
-          setRoundData(data)
-          runAlertSound()
-      }
+      setRoundType(type)
+      setRoundData(data)
+      runAlertSound()
     })
 
     setSocket(newSocket);
@@ -137,7 +82,7 @@ const GameComponent: React.FC = () => {
       answer: option
     }
     socket.emit("answer", JSON.stringify(answer))
-    resetRoundTypeStates()
+    setRoundType(null)
     setRoundData({})
   }
 
@@ -333,6 +278,28 @@ const GameComponent: React.FC = () => {
     )
   }
 
+  const renderComponent = () => {
+    switch (roundType) {
+      case "quiz":
+        return <QuizComponent />;
+      case "answer":
+        return <AnswerComponent />;
+      case "instruction":
+        return <InstructionComponent />;
+      case "point":
+        return <PointComponent />;
+      case "truth":
+        return <TruthComponent />;
+      case "whois":
+        return <WhoisComponent />;
+      case "dare":
+        return <DareComponent />;
+      default:
+        return <LoadingComponent />;
+    }
+  };
+  
+
   return (
     <Container>
       {socket === null && JoinLobbyComponent}
@@ -344,30 +311,7 @@ const GameComponent: React.FC = () => {
             <Button variant="contained" onClick={handleSocketDisconnect}>I quit</Button>
           </Box>
 
-          {isQuiz &&
-            <QuizComponent />
-          }
-          {isAnswer &&
-            <AnswerComponent />
-          }
-          {isInstruction &&
-            <InstructionComponent />
-          }
-          {isPoint && 
-            <PointComponent />
-          }
-          {isTruth &&
-            <TruthComponent />
-          }
-          {isWhois &&
-            <WhoisComponent />
-          }
-          {isDare && 
-            <DareComponent />
-          }
-          {!isAnswer && !isQuiz && !isInstruction && !isPoint && !isTruth && !isWhois && !isDare && 
-           <LoadingComponent />
-          }
+          {renderComponent()}
         </Box>
       )}
     </Container>
