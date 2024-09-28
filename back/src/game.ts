@@ -2,6 +2,7 @@ import { GameState } from "./interface/GameState";
 import { quizQuestions, quizState } from "./rounds/quiz";
 import { instructionQuestions, instructionState } from "./rounds/instructions";
 import { pointQuestions, pointState } from "./rounds/point";
+import { truthQuestions, truthState } from "./rounds/truth";
 
 class Game {
     private game: GameState = {};
@@ -14,10 +15,7 @@ class Game {
                 currentState: structuredClone(quizState),
                 players: []
             };
-            return true
         }
-
-        return false
     }
 
     addNewPlayersToLobby(lobbyCode: string, username: string) {
@@ -85,7 +83,14 @@ class Game {
             case "point":
                 answerResponse.correctAnswer = true;
                 answerResponse.message = "Only the people that were pointed at drink.";
-
+            case "truth":
+                if(answer === 0) {
+                    answerResponse.correctAnswer = false;
+                    answerResponse.message = "I'm shocked, drink up"
+                } else if (answer === 1) {
+                    answerResponse.correctAnswer = true;
+                    answerResponse.message = "I guess you're not so terrible, you're safe this round."
+                }
         }
 
         return answerResponse
@@ -105,6 +110,10 @@ class Game {
             }
             case "point": {
                 const { answerIndex, ...remainder } = pointQuestions[questionIndex]
+                return structuredClone(remainder)
+            }
+            case "truth": {
+                const { answerIndex, ...remainder } = truthQuestions[questionIndex];
                 return structuredClone(remainder)
             }
             default:
@@ -130,8 +139,15 @@ class Game {
             }
             case "point": {
                 let state = structuredClone(pointState)
-                state.questionIndex = Math.floor(Math.random() * quizQuestions.length);
+                state.questionIndex = Math.floor(Math.random() * pointQuestions.length);
                 state.answerIndex = pointQuestions[state.questionIndex].answerIndex
+
+                return state
+            }
+            case "truth": {
+                let state = structuredClone(truthState)
+                state.questionIndex = Math.floor(Math.random() * truthQuestions.length);
+                state.answerIndex = truthQuestions[state.questionIndex].answerIndex
 
                 return state
             }
@@ -146,7 +162,7 @@ class Game {
     }
 
     setRandomNextRoundType(lobbyCode: string) {
-        const options = ["point", "quiz", "instructions"]
+        const options = ["point", "quiz", "instruction", "truth"]
         this.game[lobbyCode].nextRoundType = options[Math.floor(Math.random() * options.length)];
     }
 

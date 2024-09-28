@@ -17,7 +17,7 @@ const io = new SocketIOServer(server, {
 io.on('connection', (socket) => {
   const { lobbyCode, username } = getParams(socket) || (() => { throw new Error("Invalid parameters: lobbyCode or username is missing."); })()
 
-  const newLobbyMade = game.addNewLobby(lobbyCode)
+  game.addNewLobby(lobbyCode)
   game.addNewPlayersToLobby(lobbyCode, username)
 
   console.log('New Socket.IO connection');
@@ -34,7 +34,6 @@ io.on('connection', (socket) => {
 });
 
 setInterval(() => {
-
   const socketsWithUniqueLobbyCodes = new Set<Socket>();
   const connectedSockets = io.sockets.sockets;
 

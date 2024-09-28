@@ -19,6 +19,7 @@ const GameComponent: React.FC = () => {
   const [isAnswer, setIsAnswer] = useState<boolean>(false)
   const [isInstruction, setIsInstruction] = useState<boolean>(false)
   const [isPoint, setIsPoint] = useState<boolean>(false)
+  const [isTruth, setIsTruth] = useState<boolean>(false)
 
   const runAlertSound = async () => {
     const audio = new Audio('/button-11.mp3')
@@ -38,6 +39,7 @@ const GameComponent: React.FC = () => {
     setIsQuiz(false)
     setIsInstruction(false)
     setIsPoint(false)
+    setIsTruth(false)
   }
 
   const handleConnectionInit = useCallback(() => {
@@ -85,6 +87,11 @@ const GameComponent: React.FC = () => {
           setRoundData(data)
           runAlertSound()
           break;
+        case "truth": 
+          resetRoundTypeStates()
+          setIsTruth(true)
+          setRoundData(data)
+          runAlertSound()
       }
     })
 
@@ -139,6 +146,18 @@ const GameComponent: React.FC = () => {
     setIsPoint(false)
     setRoundData({})
   }
+  const handleTruthAnswer = (option: number) => {
+    if (socket === null) return
+    const answer = {
+      username: username,
+      lobbyCode: lobbyCode,
+      answer: option
+    }
+    socket.emit("answer", JSON.stringify(answer))
+    setIsPoint(false)
+    setRoundData({})
+  }
+
   const AnswerComponent = () => {
     const { correctAnswer, message } = roundData;
 
@@ -151,6 +170,27 @@ const GameComponent: React.FC = () => {
       }}
       >
         <Typography variant='h4'>{message}</Typography>
+      </Box>
+    )
+  }
+  const TruthComponent = () => {
+    const { question } = roundData;
+
+    return (
+      <Box>
+        <Typography variant='h4'>{question}</Typography>
+        <Grid2 container spacing={2}>
+          <Grid2 xs={6}>
+            <Button style={{ backgroundColor: "green", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleTruthAnswer(1)}>
+              Yes I've done that...
+            </Button>
+          </Grid2>
+          <Grid2 xs={6}>
+            <Button style={{ backgroundColor: "red", color: whiteCode, width: "100%", padding: "50%", fontSize: "1.5rem" }} variant="contained" onClick={() => handleTruthAnswer(2)}>
+              Nope, I haven't done that...
+            </Button>
+          </Grid2>
+        </Grid2>
       </Box>
     )
   }
@@ -291,7 +331,10 @@ const GameComponent: React.FC = () => {
           {isPoint && 
             <PointComponent />
           }
-          {!isAnswer && !isQuiz && !isInstruction && !isPoint &&
+          {isTruth &&
+            <TruthComponent />
+          }
+          {!isAnswer && !isQuiz && !isInstruction && !isPoint && !isTruth &&
            <LoadingComponent />
           }
         </Box>
