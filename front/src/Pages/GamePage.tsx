@@ -18,15 +18,8 @@ const GameComponent: React.FC = () => {
   const [roundType, setRoundType] = useState<string | null>(null)
 
   const runAlertSound = async () => {
-    const audio = new Audio('/button-11.mp3')
+    const audio = new Audio('/button-11.wav')
     await new Promise(resolve => setTimeout(resolve, 500));
-
-    audio.play()
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    audio.play()
-    await new Promise(resolve => setTimeout(resolve, 500));
-
     audio.play()
   }
 
