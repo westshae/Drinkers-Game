@@ -48,6 +48,12 @@ const GameComponent: React.FC = () => {
 
       setRoundType(type)
       setRoundData(data)
+      setTimeout(()=>{
+        if(roundType!= "answer"){
+          setRoundType("answer")
+          setRoundData({ correctAnswer: false, message: "You didn't answer in time, drink up." })
+        }
+      }, 30 * 1000);
       if(type !== "answer"){
         runAlertSound()
       }

@@ -59,6 +59,11 @@ const truthQuestions = [
         question: "Have you ever been kicked out of a club/bar?",
         answerIndex: 1
     },
+    {
+    type: "truth",
+    question: "Have you ever cheated on a exam/assignment/test?",
+    answerIndex: 1
+},
 
 ]
 
