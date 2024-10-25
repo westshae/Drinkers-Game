@@ -49,6 +49,16 @@ const whoisQuestions = [
         question: "Are you drinking tonight?",
         answerIndex: 0
     },
+    {
+        type: "whois",
+        question: "Are you holding a drink half empty?",
+        answerIndex: 0
+    },
+    {
+        type: "whois",
+        question: "Did you have a shot tonight?",
+        answerIndex: 0
+    },
 
 ]
 
