@@ -65,7 +65,7 @@ setInterval(() => {
       emitRound(connectedSocket, game.getRoundEmitQuestion(currentLobbyCode))
     }
   })
-}, 600000)//10 minutes
+}, 8000)//10 minutes
 
 const emitRound = (socket: Socket, roundData: any) => {
   socket.emit('round', roundData)
